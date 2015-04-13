@@ -1,0 +1,63 @@
+<!doctype html>
+<html data-ng-app="MMQbeta">
+  <head>
+    <meta charset="utf-8"> 
+    <title>MMQ beta</title>
+    <meta name="author" content="J. Thomas">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+  </head>
+  <body class="container" data-ng-controller="VideosController">
+  <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">MMQbeta</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+      <form class="navbar-form navbar-left" role="search" data-ng-submit="add()">
+        <div class="form-group">
+            <input id="query" name="q" type="text" class="form-control" placeholder="add a youtube id" data-ng-model="query">
+        </div>
+        <button class="btn btn-default" type="submit" id="submit"> Submit</button>
+      </form>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+    <div class="row">
+        <div class="col-lg-6" id="playlist">
+          <p id="current">Currently playing: {[{ youtube.videoTitle }]}</p>
+          <table class="table table-striped" id="upcoming" data-ng-show="playlist">
+            <tr>
+                <th>In queue:</th>
+            </tr>
+            <tr data-ng-repeat="video in upcoming">
+              <td><p class="item-title" data-ng-click="launch(video.id, video.title)">{[{video.title}]}</p></td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="col-lg-6" id="placeholder"></div>
+    </div>
+    <script src="/static/angular.min.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+  <script>
+      app.config(function($interpolateProvider) {
+        $interpolateProvider.startSymbol('{[{');
+        $interpolateProvider.endSymbol('}]}');
+        });
+  </script>
+
+</html>
