@@ -83,13 +83,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
         service.launchPlayer(upcoming[0].id, upcoming[0].title);
         service.archiveVideo(upcoming[0].id, upcoming[0].title);
         service.deleteVideo(upcoming, upcoming[0].id);
-        $http.post('/finish', {"id": upcoming[0].id}).
-            success(function (results) {
-                $log.log(results);
-            }).
-            error(function (error) {
-                $log.log(error);
-            });
     }
     $rootScope.$apply();
   }
@@ -158,6 +151,13 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
       id: id,
       title: title
     });
+    $http.post('/finish', {"id": id}).
+        success(function (results) {
+            $log.log(results);
+        }).
+        error(function (error) {
+            $log.log(error);
+        });
     return history;
   };
 
