@@ -15,29 +15,6 @@ app.config( function ($httpProvider) {
   delete $httpProvider.defaults.headers.common['X-Requested-With'];
 });
 
-// Service
-
-app.factory('VideoLoadService', function($http) {
-  var promise;
-  var myService = {
-    async: function() {
-      if ( !promise ) {
-        // $http returns a promise, which has a then function, which also returns a promise
-        promise = $http.get('/results').then(function (response) {
-          // The then function here is an opportunity to modify the response
-          console.log(response);
-          // The return value gets picked up by the then in the controller.
-          return response.data;
-        });
-      }
-      // Return the promise to the controller
-      return promise;
-    }
-  };
-  return myService;
-});
-
-
 app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function ($window, $rootScope, $log, $http) {
 
   var service = this;
@@ -55,8 +32,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
   var results = [];
   var upcoming = [
   ];
-  var history = [
-  ];
 
   $window.onYouTubeIframeAPIReady = function () {
     $log.info('Youtube API is ready');
@@ -68,9 +43,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
 
   function onYoutubeReady (event) {
     $log.info('YouTube Player is ready');
-    youtube.player.cueVideoById(history[0].id);
-    youtube.videoId = history[0].id;
-    youtube.videoTitle = history[0].title;
   }
 
   function onYoutubeStateChange (event) {
@@ -124,20 +96,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     return youtube;
   }
 
-  this.listResults = function (data) {
-    results.length = 0;
-    for (var i = data.items.length - 1; i >= 0; i--) {
-      results.push({
-        id: data.items[i].id.videoId,
-        title: data.items[i].snippet.title,
-        description: data.items[i].snippet.description,
-        thumbnail: data.items[i].snippet.thumbnails.default.url,
-        author: data.items[i].snippet.channelTitle
-      });
-    }
-    return results;
-  }
-
   this.queueVideo = function (id, title) {
     upcoming.push({
       id: id,
@@ -147,10 +105,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
   };
 
   this.archiveVideo = function (id, title) {
-    history.unshift({
-      id: id,
-      title: title
-    });
     $http.post('/finish', {"id": id}).
         success(function (results) {
             $log.log(results);
@@ -158,7 +112,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
         error(function (error) {
             $log.log(error);
         });
-    return history;
   };
 
   this.deleteVideo = function (list, id) {
@@ -170,49 +123,46 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     }
   };
 
-  this.getYoutube = function () {
-    return youtube;
+  this.getTitle = function(id) {
+      var d = $http.jsonp('http://gdata.youtube.com/feeds/api/videos/'+ id + '?alt=json-in-script&callback=JSON_CALLBACK&prettyprint=true&fields=title');
+      d.then(function(d) {
+          $log.log(d.data.entry.title.$t);
+          return (d.data.entry.title.$t);
+      });
   };
 
-  this.getResults = function () {
-    return results;
+  this.getYoutube = function () {
+    return youtube;
   };
 
   this.getUpcoming = function () {
     return upcoming;
   };
 
-  this.getHistory = function () {
-    return history;
-  };
-
 }]);
 
 // Controller
 
-app.controller('VideosController', function ($scope, $http, $log,$timeout,$http, VideosService, VideoLoadService) {
+app.controller('VideosController', function ($scope, $http, $log,$timeout,$http, VideosService) {
     getData();
     init();
 
-
    function init() {
       $scope.youtube = VideosService.getYoutube();
-      $scope.results = VideosService.getResults();
       $scope.upcoming = VideosService.getUpcoming();
-      $scope.history = VideosService.getHistory();
       $scope.playlist = true;
       $scope.maxId = 0;
     }
 
     function getData() {
-        var d = $http.get('/results')
+        var d = $http.get('/results');
     // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
             $log.info(d);
             d.data.videos.forEach(function (vid) {
                 $log.info(vid);
                 if (vid['id'] > $scope.maxId) {
-                    $scope.queue(vid['code'], "Darude - Sandstorm");
+                    $scope.queue(vid['code'], VideosService.getTitle(vid['code']));
                     $scope.maxId = vid['id']
                 }
             });
@@ -230,12 +180,7 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout,$http,
 
     $scope.queue = function (id, title) {
       VideosService.queueVideo(id, title);
-      VideosService.deleteVideo($scope.history, id);
       $log.info('Queued id:' + id + ' and title:' + title);
-    };
-
-    $scope.delete = function (list, id) {
-      VideosService.deleteVideo(list, id);
     };
 
     $scope.add = function () {
