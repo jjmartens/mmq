@@ -125,10 +125,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
 
   this.getTitle = function(id) {
       var d = $http.jsonp('http://gdata.youtube.com/feeds/api/videos/'+ id + '?alt=json-in-script&callback=JSON_CALLBACK&prettyprint=true&fields=title');
-      d.then(function(d) {
-          $log.log(d.data.entry.title.$t);
-          return (d.data.entry.title.$t);
-      });
+      return d;
   };
 
   this.getYoutube = function () {
@@ -162,9 +159,14 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout,$http,
             d.data.videos.forEach(function (vid) {
                 $log.info(vid);
                 if (vid['id'] > $scope.maxId) {
-                    $scope.queue(vid['code'], VideosService.getTitle(vid['code']));
-                    $scope.maxId = vid['id']
-                }
+                    var p = VideosService.getTitle(vid['code']);
+                    p.then(function(title) {
+                        $log.log(p);
+                        $log.log(title);
+                        $scope.queue(vid['code'], title.data.entry.title.$t);
+                        $scope.maxId = vid['id']
+                    });
+                };
             });
         });
         $timeout(getData , 5000)
