@@ -4,7 +4,6 @@ Flask-MySQL==1.2
 Flask-SQLAlchemy==2.0
 Flask-Script==2.0.5
 Jinja2==2.7.3
-Mako==1.0.1
 MarkupSafe==0.23
 MySQL-python==1.2.5
 SQLAlchemy==0.9.8
@@ -17,9 +16,6 @@ certifi==14.05.14
 click==3.3
 gunicorn==19.2.1
 itsdangerous==0.24
-nltk==3.0.1
-psycopg2==2.6
-redis==2.10.3
 requests==2.5.1
 rq==0.5.0
 tornado==4.1

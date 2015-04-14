@@ -11,7 +11,7 @@ import json
 #################
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/mmq'
+app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://mmq:Ypbc27T5nantKRUP@localhost/mmq'
 db = SQLAlchemy(app)
 
 
@@ -67,6 +67,6 @@ def get_results():
 
 if __name__ == '__main__':
   http_server = HTTPServer(WSGIContainer(app))
-  http_server.listen(5000)
+  http_server.listen(5000, address='0.0.0.0')
   IOLoop.instance().start()
 
