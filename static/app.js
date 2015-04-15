@@ -1,7 +1,5 @@
 var app = angular.module('MMQbeta', []);
 
-// Run
-
 app.run(function () {
   var tag = document.createElement('script');
   tag.src = "http://www.youtube.com/iframe_api";
@@ -9,7 +7,6 @@ app.run(function () {
   firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 });
 
-// Config
 
 app.config( function ($httpProvider) {
   delete $httpProvider.defaults.headers.common['X-Requested-With'];
@@ -30,8 +27,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     state: 'stopped'
   };
   var results = [];
-  var upcoming = [
-  ];
+  var upcoming = [];
 
   $window.onYouTubeIframeAPIReady = function () {
     $log.info('Youtube API is ready');
@@ -48,17 +44,24 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
   function onYoutubeStateChange (event) {
     if (event.data == YT.PlayerState.PLAYING) {
       youtube.state = 'playing';
+      service.pushState();
     } else if (event.data == YT.PlayerState.PAUSED) {
       youtube.state = 'paused';
+      service.pushState();
     } else if (event.data == YT.PlayerState.ENDED) {
         youtube.state = 'ended';
         service.launchPlayer(upcoming[0].id, upcoming[0].title);
-        service.archiveVideo(upcoming[0].r_id, upcoming[0].code);
+        service.archiveVideo(upcoming[0].r_id);
         service.deleteVideo(upcoming, upcoming[0].id);
     }
     $rootScope.$apply();
   }
+  this.pushState = function () {
+      $log.info('Youtube API status is changed');
+  };
+  this.activate = function () {
 
+  };
   this.bindPlayer = function (elementId) {
     $log.info('Binding to ' + elementId);
     youtube.playerId = elementId;
@@ -105,8 +108,9 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     return upcoming;
   };
 
-  this.archiveVideo = function (channel, id, code) {
-    $http.post('/finish', {"id": id}).
+  this.archiveVideo = function (id) {
+      $log.log(id);
+    $http.post('/' + service.channel + '/finish', {"id": id}).
         success(function (results) {
             $log.log(results);
         }).
@@ -136,64 +140,63 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
   this.getUpcoming = function () {
     return upcoming;
   };
-
-
 }]);
 
 // Controller
 
-app.controller('VideosController', function ($scope, $http, $log,$timeout,$http, VideosService) {
+app.controller('VideosController', function ($scope, $http, $log,$timeout, VideosService) {
     init();
 
    function init() {
       $scope.youtube = VideosService.getYoutube();
       $scope.upcoming = VideosService.getUpcoming();
-      $scope.channel = VideosService.getChannel();
       $scope.playlist = true;
       $scope.maxId = 0;
     }
 
+    $scope.changeState = function () {
+        VideosService.changeState();
+    }
 
+    $scope.init = function() {
+       VideosService.channel = $scope.channel;
+       $log.log(VideosService.channel);
+       this.getData();
 
-    $scope.getData = function(channel) {
-        $log.log(channel)
-        var d = $http.get("/" + channel + '/results');
+    }
+    $scope.getData = function() {
+        var d = $http.get("/" + $scope.channel + '/results');
         // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
-            $log.info(d);
             d.data.videos.forEach(function (vid) {
-                $log.info(vid);
-                if (vid['id'] > $scope.maxId) {
+                if (vid['r_id'] > $scope.maxId) {
                     var p = VideosService.getTitle(vid['code']);
                     p.then(function(title) {
-                        $log.log(p);
-                        $log.log(title);
-                        $scope.queue(vid['code'], title.data.entry.title.$t);
-                        $scope.maxId = vid['id'];
+                        $scope.queue(vid['code'], title.data.entry.title.$t, vid['r_id']);
+                        $scope.maxId = vid['r_id'];
                     });
                 };
             });
         });
-        $timeout(function() {$scope.getData(channel)}, 5000)
+        $timeout(function() {$scope.getData()}, 5000)
     };
 
 
-    $scope.launch = function (channel, id, title) {
+    $scope.launch = function (id, title, r_id) {
       VideosService.launchPlayer(id, title);
-      VideosService.archiveVideo(channel, id, title);
+      VideosService.archiveVideo(r_id);
       VideosService.deleteVideo($scope.upcoming, id);
       $log.info('Launched id:' + id + ' and title:' + title);
     };
 
-    $scope.queue = function (id, title) {
-      VideosService.queueVideo(id, title);
-      $log.info('Queued id:' + id + ' and title:' + title);
+    $scope.queue = function (id, title, r_id) {
+      VideosService.queueVideo(id, title, r_id);
+      $log.info('Queued id:' + r_id + ' and title:' + title);
     };
 
-    $scope.add = function (channel) {
-      $http.post('/' + channel + '/add', {"id": this.query}).
+    $scope.add = function () {
+      $http.post('/' + $scope.channel + '/add', {"id": this.query}).
         success(function(results) {
-          $log.log(results);
         }).
         error(function(error) {
           $log.log(error);

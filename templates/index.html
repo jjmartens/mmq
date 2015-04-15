@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
   </head>
-  <body class="container" data-ng-controller="VideosController">
+  <body class="container" data-ng-controller="VideosController" ng-init="channel='{{ channel.slug }}';init()">
   <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -24,15 +24,20 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-      <form class="navbar-form navbar-left" role="search" data-ng-submit="add({{ channel.id }})">
+      <form class="navbar-form navbar-left" role="search" data-ng-submit="add()">
         <div class="form-group">
             <input id="query" name="q" type="text" class="form-control" placeholder="add a youtube id" data-ng-model="query">
         </div>
         <button class="btn btn-default" type="submit" id="submit"> Submit</button>
       </form>
-      <button class="btn btn-default pull-left" data-ng-click="getData({{ channel.id }})">Start playback</button>
       </ul>
+       <div class="form-group pull-right">
+        <form class="navbar-form navbar-right pull-right">
+          <button class="btn btn-default pull-right" data-ng-click="changeState()">{[{ youtube.state }]}</button>
+        </form>
+       </div>
     </div><!-- /.navbar-collapse -->
+
   </div><!-- /.container-fluid -->
 </nav>
     <div class="row">
@@ -43,7 +48,7 @@
                 <th>In queue:</th>
             </tr>
             <tr data-ng-repeat="video in upcoming">
-              <td><p class="item-title" data-ng-click="launch({{channel}}, video.id, video.title)">{[{video.title}]}</p></td>
+              <td><p class="item-title" data-ng-click="launch(video.id, video.title, video.r_id)">{[{video.title}]}</p></td>
             </tr>
           </table>
         </div>
