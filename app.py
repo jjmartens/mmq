@@ -11,7 +11,7 @@ import json
 #################
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://mmq:Ypbc27T5nantKRUP@localhost/mmq'
+app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:@localhost/mmq'
 db = SQLAlchemy(app)
 
 
