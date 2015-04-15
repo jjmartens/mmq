@@ -16,53 +16,72 @@ db = SQLAlchemy(app)
 
 
 
-from models import Video
+from models import Channel,Record,Video
 
+###########
+# utility #
+###########
+def get_or_create(session, model, **kwargs):
+    instance = session.query(model).filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        params = dict((k, v) for k, v in kwargs.iteritems() if not isinstance(v, ClauseElement))
+        instance = model(**params)
+        session.add(instance)
+        return instance
 
-##########
 # routes #
 ##########
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('index.html')
+@app.route('/<channel_id>/playback', methods=['GET', 'POST'])
+def index(channel_id):
+    channel = Channel.query.filter_by(id=channel_id).first()
+    if not channel:
+        return "404 - Not found"
+    return render_template('index.html', channel=channel)
 
 
-@app.route('/add', methods=['POST'])
-def add():
+@app.route('/<channel>/add', methods=['POST'])
+def add(channel):
     data = json.loads(request.data.decode())
     id = data["id"]
     errors = []
     if len(id) != 11:
         errors.append("Add a youtube id not a link.")
         return jsonify({"error": errors})
-    # save the results
-    try:
+    # see if video exists if it doesnt make a new one
+    video = Video.query.filter_by(code=id).first()
+    if not video:
         video = Video(id)
         db.session.add(video)
         db.session.commit()
-        return str(video.id)
+    try:
+        record = Record(channel, video.id)
+        db.session.add(record)
+        db.session.commit()
+        return jsonify({"succes": True})
     except:
         errors.append("Unable to add item to database.")
         return jsonify({"error": errors})
-    return jsonify({"succes": True})
 
-@app.route('/finish', methods=['POST'])
-def finish_command():
+@app.route('/<channel>/finish', methods=['POST'])
+def finish_command(channel):
     data=request.get_json()
     if 'id' not in data:
         return jsonify({'succes':False, "message" : "Geen valide post request"})
-    video = Video.query.filter_by(code=data['id']).all()
-    map(lambda x: x.finish(), video)
+    video = Record.query.filter_by(id=data['id'],channel_id=channel).first()
+    x.finish()
     db.session.commit()
     return jsonify({"succes":True})
 
 
 
-@app.route("/results", methods=['GET'])
-def get_results():
-    results = Video.query.filter_by(executed=False).all()
-    return jsonify({"videos" : map(lambda x: {'code' :x.code, 'id': x.id} , results)})
+@app.route("/<channel>/results", methods=['GET'])
+def get_results(channel):
+    results = Record.query.filter_by(executed=False,channel_id=channel).all()
+    print results
+    return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'id': x.id} , results)})
 
 
 if __name__ == '__main__':

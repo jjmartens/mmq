@@ -24,12 +24,13 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-      <form class="navbar-form navbar-left" role="search" data-ng-submit="add()">
+      <form class="navbar-form navbar-left" role="search" data-ng-submit="add({{ channel.id }})">
         <div class="form-group">
             <input id="query" name="q" type="text" class="form-control" placeholder="add a youtube id" data-ng-model="query">
         </div>
         <button class="btn btn-default" type="submit" id="submit"> Submit</button>
       </form>
+      <button class="btn btn-default pull-left" data-ng-click="getData({{ channel.id }})">Start playback</button>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
@@ -42,7 +43,7 @@
                 <th>In queue:</th>
             </tr>
             <tr data-ng-repeat="video in upcoming">
-              <td><p class="item-title" data-ng-click="launch(video.id, video.title)">{[{video.title}]}</p></td>
+              <td><p class="item-title" data-ng-click="launch({{channel}}, video.id, video.title)">{[{video.title}]}</p></td>
             </tr>
           </table>
         </div>
@@ -53,6 +54,7 @@
     <script src="/static/app.js"></script>
   </body>
   <script>
+
       app.config(function($interpolateProvider) {
         $interpolateProvider.startSymbol('{[{');
         $interpolateProvider.endSymbol('}]}');

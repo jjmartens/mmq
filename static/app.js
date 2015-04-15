@@ -18,7 +18,7 @@ app.config( function ($httpProvider) {
 app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function ($window, $rootScope, $log, $http) {
 
   var service = this;
-
+  var channel;
   var youtube = {
     ready: false,
     player: null,
@@ -53,7 +53,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     } else if (event.data == YT.PlayerState.ENDED) {
         youtube.state = 'ended';
         service.launchPlayer(upcoming[0].id, upcoming[0].title);
-        service.archiveVideo(upcoming[0].id, upcoming[0].title);
+        service.archiveVideo(upcoming[0].r_id, upcoming[0].code);
         service.deleteVideo(upcoming, upcoming[0].id);
     }
     $rootScope.$apply();
@@ -96,15 +96,16 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     return youtube;
   }
 
-  this.queueVideo = function (id, title) {
+  this.queueVideo = function (id, title, r_id) {
     upcoming.push({
       id: id,
-      title: title
+      title: title,
+      r_id: r_id
     });
     return upcoming;
   };
 
-  this.archiveVideo = function (id, title) {
+  this.archiveVideo = function (channel, id, code) {
     $http.post('/finish', {"id": id}).
         success(function (results) {
             $log.log(results);
@@ -136,24 +137,28 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     return upcoming;
   };
 
+
 }]);
 
 // Controller
 
 app.controller('VideosController', function ($scope, $http, $log,$timeout,$http, VideosService) {
-    getData();
     init();
 
    function init() {
       $scope.youtube = VideosService.getYoutube();
       $scope.upcoming = VideosService.getUpcoming();
+      $scope.channel = VideosService.getChannel();
       $scope.playlist = true;
       $scope.maxId = 0;
     }
 
-    function getData() {
-        var d = $http.get('/results');
-    // Call the async method and then do stuff with what is returned inside our own then function
+
+
+    $scope.getData = function(channel) {
+        $log.log(channel)
+        var d = $http.get("/" + channel + '/results');
+        // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
             $log.info(d);
             d.data.videos.forEach(function (vid) {
@@ -164,18 +169,18 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout,$http,
                         $log.log(p);
                         $log.log(title);
                         $scope.queue(vid['code'], title.data.entry.title.$t);
-                        $scope.maxId = vid['id']
+                        $scope.maxId = vid['id'];
                     });
                 };
             });
         });
-        $timeout(getData , 5000)
+        $timeout(function() {$scope.getData(channel)}, 5000)
     };
 
 
-    $scope.launch = function (id, title) {
+    $scope.launch = function (channel, id, title) {
       VideosService.launchPlayer(id, title);
-      VideosService.archiveVideo(id, title);
+      VideosService.archiveVideo(channel, id, title);
       VideosService.deleteVideo($scope.upcoming, id);
       $log.info('Launched id:' + id + ' and title:' + title);
     };
@@ -185,8 +190,8 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout,$http,
       $log.info('Queued id:' + id + ' and title:' + title);
     };
 
-    $scope.add = function () {
-      $http.post('/add', {"id": this.query}).
+    $scope.add = function (channel) {
+      $http.post('/' + channel + '/add', {"id": this.query}).
         success(function(results) {
           $log.log(results);
         }).
