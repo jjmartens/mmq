@@ -113,7 +113,12 @@ def get_playlist(channel_slug):
     q = Record.query.filter_by(channel_id=channel.id).group_by(Record.video_id)
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
     current = Record.query.filter_by(executed=True).order_by(Record.id.desc()).first()
-    return jsonify({"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results), 'current_title':current.video.title})
+    data = {"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)}
+    if current:
+        data['current_title'] = current.video.title
+    else:
+        data['current_title'] = "no playback detected"
+    return jsonify(data)
 
 
 
