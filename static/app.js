@@ -75,8 +75,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
             upcoming.length = 0;
             upcoming.push.apply(upcoming, d.data.upcoming);
             youtube.videoTitle = d.data.current_title;
-            $log.log(d.data)
-            $log.log(playlist);
         });
   };
 
@@ -221,8 +219,9 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout, Video
 
     $scope.tabulate = function (state) {
       $scope.playlist = state;
-    }
+    };
 });
+
 app.controller('IndexController', function ($scope, $http, $log,$timeout, VideosService) {
     init();
 
@@ -230,7 +229,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
       $scope.playlist = VideosService.getPlaylist();
       $scope.upcoming = VideosService.getUpcoming();
       $scope.youtube = VideosService.getYoutube();
-    }
+    };
 
     $scope.init = function() {
        VideosService.channel = $scope.channel;
@@ -247,6 +246,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
         error(function(error) {
           $log.log(error);
         });
-    }
+    };
 
 });
