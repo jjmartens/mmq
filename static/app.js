@@ -28,6 +28,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   var results = [];
   var upcoming = [];
   var playlist = [];
+
   $window.onYouTubeIframeAPIReady = function () {
     $log.info('Youtube API is ready');
     youtube.ready = true;
@@ -58,6 +59,25 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   this.startPoll =  function () {
         service.poll();
         $timeout(service.startPoll, 10000)
+  };
+
+  this.startPlaylistPoll =  function () {
+      service.playlistPoll();
+      $timeout(service.startPlaylistPoll, 5000)
+  };
+
+  this.playlistPoll = function () {
+      var d = $http.get("/" + service.channel + '/playlist');
+        // Call the async method and then do stuff with what is returned inside our own then function
+        d.then(function(d) {
+            playlist.length = 0;
+            playlist.push.apply(playlist, d.data.playlistVideos);
+            upcoming.length = 0;
+            upcoming.push.apply(upcoming, d.data.upcoming);
+            youtube.videoTitle = d.data.current_title;
+            $log.log(d.data)
+            $log.log(playlist);
+        });
   };
 
 
@@ -208,11 +228,13 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
 
    function init() {
       $scope.playlist = VideosService.getPlaylist();
+      $scope.upcoming = VideosService.getUpcoming();
+      $scope.youtube = VideosService.getYoutube();
     }
 
     $scope.init = function() {
        VideosService.channel = $scope.channel;
-       VideosService.startPoll();
+       VideosService.startPlaylistPoll();
     };
 
     $scope.add = function () {

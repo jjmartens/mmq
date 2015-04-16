@@ -7,25 +7,27 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
   </head>
-  <body class="container" data-ng-controller="VideosController" ng-init="channel='{{ channel.slug }}';init()">
+  <body class="container" data-ng-controller="IndexController" ng-init="channel='{{ channel.slug }}';init()">
   <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/">MMQalpha</a>
-    </div>
+    <a class="navbar-brand" href="/">MMQalpha</a>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+      <form class="navbar-form navbar-left" role="search" data-ng-submit="add()">
+        <div class="form-group">
+            <input id="query" name="q" type="text" class="form-control" placeholder="add a youtube id" data-ng-model="query">
+        </div>
+        <button class="btn btn-default" type="submit" id="submit"> Submit</button>
+      </form>
+      </ul>
        <div class="form-group pull-right">
         <form class="navbar-form navbar-right pull-right">
-          <button class="btn btn-default pull-right" data-ng-click="changeState()">{[{ youtube.state }]}</button>
+            <a class="btn btn-default pull-right" target="_blank" href="{{ url_for('broadcast',channel_slug=channel.slug) }}">
+               Start broadcast
+            </a>
         </form>
        </div>
     </div><!-- /.navbar-collapse -->
@@ -33,9 +35,19 @@
   </div><!-- /.container-fluid -->
 </nav>
     <div class="row">
-        <div class="col-lg-6" id="upcoming">
-          <p id="current">Currently playing:</p>
-          <table class="table table-striped" id="upcoming" data-ng-show="playlist">
+        <div class="col-lg-6" id="playlist">
+          <table class="table table-striped" id="playlist">
+            <tr>
+                <th>In history:</th>
+            </tr>
+            <tr data-ng-repeat="video in playlist">
+              <td><p class="item-title">{[{video.title}]}</p></td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-lg-6" id="playlist">
+          <p id="current">Currently playing: {[{ youtube.videoTitle }]}</p>
+          <table class="table table-striped" id="upcoming">
             <tr>
                 <th>In queue:</th>
             </tr>
@@ -45,7 +57,6 @@
           </table>
         </div>
 
-        <div class="col-lg-6" id="placeholder"></div>
     </div>
     <script src="/static/angular.min.js"></script>
     <script src="/static/app.js"></script>

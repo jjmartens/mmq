@@ -26,11 +26,16 @@ from models import Channel,Record,Video
 ##########
 
 @app.route('/<channel_slug>', methods=['GET', 'POST'])
-def index(channel_slug):
+def channelindex(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return "404 - Not found"
-    return render_template('index.html', channel=channel)
+    return render_template('channelindex.html', channel=channel)
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    channels = Channel.query.all()
+    return render_template('index.html', channels=channels)
 
 
 @app.route('/<channel_slug>/playback', methods=['GET', 'POST'])
@@ -99,6 +104,17 @@ def get_results(channel_slug):
         return "404 - Not found"
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
     return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)})
+
+@app.route("/<channel_slug>/playlist", methods=['GET'])
+def get_playlist(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return "404 - Not found"
+    q = Record.query.filter_by(channel_id=channel.id).group_by(Record.video_id)
+    results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
+    current = Record.query.filter_by(executed=True).order_by(Record.id.desc()).first()
+    return jsonify({"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results), 'current_title':current.video.title})
+
 
 
 if __name__ == '__main__':
