@@ -12,8 +12,7 @@ app.config( function ($httpProvider) {
   delete $httpProvider.defaults.headers.common['X-Requested-With'];
 });
 
-app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function ($window, $rootScope, $log, $http) {
-
+app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeout', function ($window, $rootScope, $log, $http, $timeout) {
   var service = this;
   var channel;
   var youtube = {
@@ -28,7 +27,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
   };
   var results = [];
   var upcoming = [];
-
+  var playlist = [];
   $window.onYouTubeIframeAPIReady = function () {
     $log.info('Youtube API is ready');
     youtube.ready = true;
@@ -56,6 +55,17 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
     }
     $rootScope.$apply();
   }
+
+  this.startPoll =  function () {
+        var d = $http.get("/" + service.channel + '/results');
+        // Call the async method and then do stuff with what is returned inside our own then function
+        d.then(function(d) {
+            playlist.length = 0
+            playlist.push.apply(playlist, d.data.videos);
+        });
+        $log.log(playlist);
+        $timeout(service.startPoll, 5000)
+  };
   this.pushState = function () {
       $log.info('Youtube API status is changed');
   };
@@ -127,7 +137,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
       }
     }
   };
-
   this.getTitle = function(id) {
       var d = $http.jsonp('http://gdata.youtube.com/feeds/api/videos/'+ id + '?alt=json-in-script&callback=JSON_CALLBACK&prettyprint=true&fields=title');
       return d;
@@ -136,14 +145,15 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', function
   this.getYoutube = function () {
     return youtube;
   };
-
+  this.getPlaylist = function () {
+    return playlist;
+  };
   this.getUpcoming = function () {
     return upcoming;
   };
 }]);
 
 // Controller
-
 app.controller('VideosController', function ($scope, $http, $log,$timeout, VideosService) {
     init();
 
@@ -162,19 +172,16 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout, Video
        VideosService.channel = $scope.channel;
        $log.log(VideosService.channel);
        this.getData();
-
     }
+
     $scope.getData = function() {
         var d = $http.get("/" + $scope.channel + '/results');
         // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
             d.data.videos.forEach(function (vid) {
                 if (vid['r_id'] > $scope.maxId) {
-                    var p = VideosService.getTitle(vid['code']);
-                    p.then(function(title) {
-                        $scope.queue(vid['code'], title.data.entry.title.$t, vid['r_id']);
-                        $scope.maxId = vid['r_id'];
-                    });
+                    $scope.queue(vid['code'], vid['title'], vid['r_id']);
+                    $scope.maxId = vid['r_id'];
                 };
             });
         });
@@ -197,13 +204,37 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout, Video
     $scope.add = function () {
       $http.post('/' + $scope.channel + '/add', {"id": this.query}).
         success(function(results) {
+         $scope.query = "";
+        }).
+        error(function(error) {
+          $log.log(error);
+        });
+    };
+
+    $scope.tabulate = function (state) {
+      $scope.playlist = state;
+    }
+});
+app.controller('IndexController', function ($scope, $http, $log,$timeout, VideosService) {
+    init();
+
+   function init() {
+      $scope.playlist = VideosService.getPlaylist();
+    }
+
+    $scope.init = function() {
+       VideosService.channel = $scope.channel;
+       VideosService.startPoll();
+    };
+
+    $scope.add = function () {
+      $http.post('/' + $scope.channel + '/add', {"id": this.query}).
+        success(function(results) {
+            $scope.query = "";
         }).
         error(function(error) {
           $log.log(error);
         });
     }
 
-    $scope.tabulate = function (state) {
-      $scope.playlist = state;
-    }
 });

@@ -4,8 +4,7 @@ from tornado.ioloop import IOLoop
 from flask import Flask, render_template, request, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 import json
-
-
+import urllib
 #################
 # configuration #
 #################
@@ -26,12 +25,20 @@ from models import Channel,Record,Video
 # routes #
 ##########
 
-@app.route('/<channel_slug>/playback', methods=['GET', 'POST'])
+@app.route('/<channel_slug>', methods=['GET', 'POST'])
 def index(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return "404 - Not found"
     return render_template('index.html', channel=channel)
+
+
+@app.route('/<channel_slug>/playback', methods=['GET', 'POST'])
+def broadcast(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return "404 - Not found"
+    return render_template('broadcast.html', channel=channel)
 
 
 @app.route('/<channel_slug>/add', methods=['POST'])
@@ -50,9 +57,13 @@ def add(channel_slug):
     # see if video exists if it doesnt make a new one
     video = Video.query.filter_by(code=id).first()
     if not video:
-        video = Video(id)
+        url = 'http://gdata.youtube.com/feeds/api/videos/{}?alt=json&v=2'.format(id)
+        title_data = json.loads(urllib.urlopen(url).read())
+        title = title_data['entry']['title']['$t']
+        video = Video(id, title=title)
         db.session.add(video)
         db.session.commit()
+
     try:
         record = Record(channel.id , video.id)
         db.session.add(record)
@@ -87,7 +98,7 @@ def get_results(channel_slug):
     if not channel:
         return "404 - Not found"
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
-    return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'r_id': x.id} , results)})
+    return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)})
 
 
 if __name__ == '__main__':
