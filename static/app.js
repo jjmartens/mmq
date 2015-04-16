@@ -49,22 +49,25 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
       service.pushState();
     } else if (event.data == YT.PlayerState.ENDED) {
         youtube.state = 'ended';
-        service.launchPlayer(upcoming[0].id, upcoming[0].title);
+        service.launchPlayer(upcoming[0].code, upcoming[0].title);
         service.archiveVideo(upcoming[0].r_id);
-        service.deleteVideo(upcoming, upcoming[0].id);
     }
     $rootScope.$apply();
   }
 
   this.startPoll =  function () {
+        service.poll();
+        $timeout(service.startPoll, 10000)
+  };
+
+
+  this.poll =  function () {
         var d = $http.get("/" + service.channel + '/results');
         // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
-            playlist.length = 0
-            playlist.push.apply(playlist, d.data.videos);
+            upcoming.length = 0;
+            upcoming.push.apply(upcoming, d.data.videos);
         });
-        $log.log(playlist);
-        $timeout(service.startPoll, 5000)
   };
   this.pushState = function () {
       $log.info('Youtube API status is changed');
@@ -103,6 +106,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   this.launchPlayer = function (id, title) {
+    $log.log(id,title);
     youtube.player.loadVideoById(id);
     youtube.videoId = id;
     youtube.videoTitle = title;
@@ -119,10 +123,8 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   this.archiveVideo = function (id) {
-      $log.log(id);
-    $http.post('/' + service.channel + '/finish', {"id": id}).
+      $http.post('/' + service.channel + '/finish', {"id": id}).
         success(function (results) {
-            $log.log(results);
         }).
         error(function (error) {
             $log.log(error);
@@ -131,7 +133,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
 
   this.deleteVideo = function (list, id) {
     for (var i = list.length - 1; i >= 0; i--) {
-      if (list[i].id === id) {
+      if (list[i].code === id) {
         list.splice(i, 1);
         break;
       }
@@ -171,29 +173,14 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout, Video
     $scope.init = function() {
        VideosService.channel = $scope.channel;
        $log.log(VideosService.channel);
-       this.getData();
-    }
-
-    $scope.getData = function() {
-        var d = $http.get("/" + $scope.channel + '/results');
-        // Call the async method and then do stuff with what is returned inside our own then function
-        d.then(function(d) {
-            d.data.videos.forEach(function (vid) {
-                if (vid['r_id'] > $scope.maxId) {
-                    $scope.queue(vid['code'], vid['title'], vid['r_id']);
-                    $scope.maxId = vid['r_id'];
-                };
-            });
-        });
-        $timeout(function() {$scope.getData()}, 5000)
+       VideosService.startPoll();
     };
 
-
-    $scope.launch = function (id, title, r_id) {
-      VideosService.launchPlayer(id, title);
+    $scope.launch = function (code, title, r_id) {
+      VideosService.launchPlayer(code, title);
       VideosService.archiveVideo(r_id);
-      VideosService.deleteVideo($scope.upcoming, id);
-      $log.info('Launched id:' + id + ' and title:' + title);
+      VideosService.poll();
+      $log.info('Launched id:' + code + ' and title:' + title);
     };
 
     $scope.queue = function (id, title, r_id) {
@@ -205,6 +192,7 @@ app.controller('VideosController', function ($scope, $http, $log,$timeout, Video
       $http.post('/' + $scope.channel + '/add', {"id": this.query}).
         success(function(results) {
          $scope.query = "";
+          VideosService.poll();
         }).
         error(function(error) {
           $log.log(error);
@@ -231,6 +219,8 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
       $http.post('/' + $scope.channel + '/add', {"id": this.query}).
         success(function(results) {
             $scope.query = "";
+            VideosService.poll();
+
         }).
         error(function(error) {
           $log.log(error);
