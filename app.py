@@ -112,7 +112,7 @@ def get_playlist(channel_slug):
         return "404 - Not found"
     q = Record.query.filter_by(channel_id=channel.id).group_by(Record.video_id)
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
-    current = Record.query.filter_by(executed=True).order_by(Record.id.desc()).first()
+    current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
     data = {"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)}
     if current:
         data['current_title'] = current.video.title
