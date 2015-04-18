@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
   </head>
-  <body class="container">
+  <body class="container"  data-ng-controller="IndexController" data-ng-init="poll()">
   <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -23,17 +23,33 @@
 </nav>
     <div class="row">
         <div class="col-lg-6" id="playlist">
-          <table class="table table-striped" id="playlist">
+          <table class="table table-striped" id="channels">
             <tr>
                 <th>Channels:</th>
             </tr>
-              {% for channel in channels %}
-                <tr>
-                    <td><a href="{{ url_for('channelindex',channel_slug=channel.slug) }}"><p class="item-title">{{channel.title}}</p></a></td>
-                </tr>
-            {% endfor %}
+            <tr data-ng-repeat="channel in channels">
+                <td><a href="/{[{channel.slug}]}"><p class="item-title">{[{channel.title}]}</p></a></td>
+            </tr>
+          <tr>
+              <td>
+                  <form data-ng-submit="add()">
+                  <div class="col-lg-8">
+                    <input style="float:left;" class="form-control" id="query" name="q" type="text" placeholder="Add channel" data-ng-model="channel">
+                  </div>
+                  <button style="float:left;" class="btn btn-default" type="submit" id="submit"> Submit</button>
+                  </form>
+              </td>
+          </tr>
           </table>
         </div>
     </div>
+    <script src="/static/angular.min.js"></script>
+    <script src="/static/home.js"></script>
   </body>
+  <script>
+      app.config(function($interpolateProvider) {
+        $interpolateProvider.startSymbol('{[{');
+        $interpolateProvider.endSymbol('}]}');
+        });
+  </script>
 </html>

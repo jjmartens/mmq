@@ -1,17 +1,5 @@
 from app import db
-import re
-from unicodedata import normalize
-
-_punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
-
-def slugify(text, delim=u'-'):
-    """Generates an slightly worse ASCII-only slug."""
-    result = []
-    for word in _punct_re.split(text.lower()):
-        word = normalize('NFKD', word).encode('ascii', 'ignore')
-        if word:
-            result.append(word)
-    return unicode(delim.join(result))
+from slugify import slugify
 
 
 class Record(db.Model):
@@ -60,5 +48,9 @@ class Channel(db.Model):
     records = db.relationship('Record', backref='channel',
                             lazy='dynamic')
     slug = db.Column(db.String(64))
+
+    def __init__(self,title):
+        self.title = title
+        self.slug = slugify(title)
 
 

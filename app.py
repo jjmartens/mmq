@@ -33,10 +33,30 @@ def channelindex(channel_slug):
         return "404 - Not found"
     return render_template('channelindex.html', channel=channel)
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    return render_template('index.html')
+
+@app.route('/channels', methods=['GET', 'POST'])
+def channels():
     channels = Channel.query.all()
-    return render_template('index.html', channels=channels)
+    return jsonify({"channels" : map(lambda x: {'title' :x.title, 'slug': x.slug} , channels)})
+
+@app.route('/add', methods=['POST'])
+def addchannel():
+    data = json.loads(request.data.decode())
+    title = data["title"]
+    try:
+        channel = Channel(title)
+        db.session.add(channel)
+        db.session.commit()
+        return jsonify({"succes": True})
+    except:
+        errors.append("Unable to add channel to database.")
+        return jsonify({"error": errors})
+
+
 
 
 @app.route('/<channel_slug>/playback', methods=['GET', 'POST'])
