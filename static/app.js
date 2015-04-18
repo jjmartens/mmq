@@ -236,6 +236,16 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
        VideosService.startPlaylistPoll();
     };
 
+    $scope.queue = function (id) {
+        $log.log(id);
+      $http.post('/' + $scope.channel + '/add_existing', {"id": id}).
+        success(function(results) {
+            VideosService.poll();
+        }).
+        error(function(error) {
+          $log.log(error);
+        });
+    }
     $scope.add = function () {
       $http.post('/' + $scope.channel + '/add', {"id": this.query}).
         success(function(results) {

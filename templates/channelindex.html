@@ -38,10 +38,10 @@
         <div class="col-lg-6" id="playlist">
           <table class="table table-striped" id="playlist">
             <tr>
-                <th>In history:</th>
+                <th>In playlist:</th>
             </tr>
             <tr data-ng-repeat="video in playlist">
-              <td><p class="item-title">{[{video.title}]}</p></td>
+              <td><p class="item-title" data-ng-click="queue(video.id)")>{[{video.title}]}</p></td>
             </tr>
           </table>
         </div>
@@ -52,7 +52,7 @@
                 <th>In queue:</th>
             </tr>
             <tr data-ng-repeat="video in upcoming">
-              <td><p class="item-title" data-ng-click="launch(video.code, video.title, video.r_id)">{[{video.title}]}</p></td>
+              <td><p class="item-title">{[{video.title}]}</p></td>
             </tr>
           </table>
         </div>

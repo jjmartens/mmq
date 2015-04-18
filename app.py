@@ -69,7 +69,31 @@ def add(channel_slug):
         video = Video(id, title=title)
         db.session.add(video)
         db.session.commit()
+    try:
+        record = Record(channel.id , video.id)
+        db.session.add(record)
+        db.session.commit()
+        return jsonify({"succes": True})
+    except:
+        errors.append("Unable to add item to database.")
+        return jsonify({"error": errors})
 
+
+@app.route('/<channel_slug>/add_existing', methods=['POST'])
+def add_existing(channel_slug):
+    data = json.loads(request.data.decode())
+    id = data["id"]
+    errors = []
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        errors.append("channel does not exist (anymore)")
+        return jsonify({"error" : errors})
+
+    # see if video exists if it doesnt make a new one
+    video = Video.query.filter_by(id=id).first()
+    if not video:
+        errors.append("Video does not exist (anymore)")
+        return jsonify({"error" : errors})
     try:
         record = Record(channel.id , video.id)
         db.session.add(record)
@@ -84,7 +108,6 @@ def finish_command(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return "404 - Not found"
-
     data=request.get_json()
     if 'id' not in data:
         return jsonify({'succes':False, "message" : "Geen valide post request"})
@@ -122,7 +145,7 @@ def get_playlist(channel_slug):
     q = Record.query.filter_by(channel_id=channel.id).group_by(Record.video_id)
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
     current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
-    data = {"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)}
+    data = {"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)}
     if current:
         data['current_title'] = current.video.title
     else:
