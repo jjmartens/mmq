@@ -3,6 +3,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from flask import Flask, render_template, request, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
+from  sqlalchemy.sql.expression import func
 import json
 import urllib
 #################
@@ -103,7 +104,15 @@ def get_results(channel_slug):
     if not channel:
         return "404 - Not found"
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
+    if not results:
+        random_rec = Record.query.filter_by(channel_id=channel.id).order_by(func.rand()).first()
+        if random_rec:
+            entry = Record(channel.id, random_rec.video.id)
+            db.session.add(entry)
+            db.session.commit()
+            results = [entry]
     return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)})
+
 
 @app.route("/<channel_slug>/playlist", methods=['GET'])
 def get_playlist(channel_slug):
