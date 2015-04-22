@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/static/bootstrap.min.css">
     <link rel="stylesheet" href="/static/styles.css">
   </head>
-  <body class="container" data-ng-controller="IndexController" ng-init="channel='{{ channel.slug }}';init()">
+  <body data-ng-controller="IndexController" ng-init="channel='{{ channel.slug }}';init()">
   <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -16,47 +16,54 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-      <form class="navbar-form navbar-left" role="search" data-ng-submit="search()">
-        <div class="form-group">
-            <input id="query" name="q" type="text" class="form-control" placeholder="Search youtube video" data-ng-model="query">
-        </div>
-        <button class="btn btn-default" type="submit" id="submit"> Submit</button>
-      </form>
+                <h4 id="current">Currently playing: {[{ youtube.videoTitle }]}</h4>
       </ul>
        <div class="form-group pull-right">
-        <form class="navbar-form navbar-right pull-right">
             <a class="btn btn-default pull-right" target="_blank" href="{{ url_for('broadcast',channel_slug=channel.slug) }}">
                Start broadcast
             </a>
-        </form>
        </div>
     </div><!-- /.navbar-collapse -->
 
   </div><!-- /.container-fluid -->
 </nav>
     <div class="row">
-        <div class="col-lg-6" id="playlist">
-          <table class="table table-striped" id="playlist">
-            <tr>
-                <th>Search results:</th>
-            </tr>
-            <tr data-ng-repeat="video in results">
-              <td>
-                  <div class="col-lg-4">
-                    <img class="thumbnail" src="{[{ video.thumbnail }]}" />
-                  </div>
-                  <div class="col-lg-8">
-                      <p class="item-title" data-ng-click="add(video.id)")>
-                          {[{video.title}]}
-                          <span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span>
-                      </p>
-                  </div>
-              </td>
-            </tr>
-          </table>
+        <div class="col-lg-4" id="playlist">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h3>Search a song on youtube</h3>
+                  <form class="form-inline search" role="search" data-ng-submit="search()">
+                    <div class="form-group">
+                        <input id="query" name="q" type="text" class="form-control" placeholder="Search youtube video" data-ng-model="query">
+                    </div>
+                    <button class="btn btn-default" type="submit" id="submit"> Submit</button>
+                  </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <table class="table table-striped" id="playlist">
+                        <tr>
+                            <th>Search results:</th>
+                        </tr>
+                        <tr data-ng-repeat="video in results">
+                          <td>
+                              <div class="col-lg-2">
+                                <img class="thumbnail" src="{[{ video.thumbnail }]}" />
+                              </div>
+                              <div class="col-lg-10">
+                                  <p class="item-title" data-ng-click="add(video.id)")>
+                                      {[{video.title}]}
+                                      <span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span>
+                                  </p>
+                              </div>
+                          </td>
+                        </tr>
+                      </table>
+                </div>
+            </div>
         </div>
-        <div class="col-lg-6" id="playlist">
-          <p id="current">Currently playing: {[{ youtube.videoTitle }]}</p>
+        <div class="col-lg-4" id="playlist">
           <table class="table table-striped" id="upcoming">
             <tr>
                 <th>In queue:</th>
@@ -66,9 +73,7 @@
             </tr>
           </table>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-lg-6" id="playlist">
+        <div class="col-lg-4" id="playlist">
           <table class="table table-striped" id="playlist">
             <tr>
                 <th>In playlist:</th>
