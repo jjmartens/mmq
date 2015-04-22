@@ -66,10 +66,15 @@
         <div class="col-lg-4" id="playlist">
           <table class="table table-striped" id="upcoming">
             <tr>
-                <th>In queue:</th>
+                <th>Title</th>
+                <th>Time</th>
+                <th>Until</th>
             </tr>
             <tr data-ng-repeat="video in upcoming">
               <td><p class="item-title">{[{video.title}]}</p></td>
+              <td>{[{video.duration | secondsToTime}]}</td>
+              <td ng-show="$index != 0">{[{(upcoming | runningTotal:'duration':$index-1) | secondsToTime}]}</td>
+              <td ng-show="$index == 0">Soon</td>
             </tr>
           </table>
         </div>

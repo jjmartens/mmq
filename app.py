@@ -47,6 +47,7 @@ def channels():
 def addchannel():
     data = json.loads(request.data.decode())
     title = data["title"]
+    errors = {}
     try:
         channel = Channel(title)
         db.session.add(channel)
@@ -85,8 +86,9 @@ def add(channel_slug):
     if not video:
         url = 'http://gdata.youtube.com/feeds/api/videos/{}?alt=json&v=2'.format(id)
         title_data = json.loads(urllib.urlopen(url).read())
+        duration =  title_data['entry']['media$group']['media$content'][0]['duration']
         title = title_data['entry']['title']['$t']
-        video = Video(id, title=title)
+        video = Video(id, title=title,duration=duration)
         db.session.add(video)
         db.session.commit()
     try:
@@ -154,7 +156,7 @@ def get_results(channel_slug):
             db.session.add(entry)
             db.session.commit()
             results = [entry]
-    return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)})
+    return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results)})
 
 
 @app.route("/<channel_slug>/playlist", methods=['GET'])
@@ -165,7 +167,7 @@ def get_playlist(channel_slug):
     q = Record.query.filter_by(channel_id=channel.id).group_by(Record.video_id)
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
     current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
-    data = {"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title} , results)}
+    data = {"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results)}
     if current:
         data['current_title'] = current.video.title
     else:

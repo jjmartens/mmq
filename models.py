@@ -29,10 +29,12 @@ class Video(db.Model):
     id = db.Column(db.Integer , primary_key=True)
     code = db.Column(db.String(11))
     title = db.Column(db.String(64))
+    duration = db.Column(db.Integer())
     records = db.relationship('Record', backref='video',
                                 lazy='dynamic')
 
-    def __init__(self, code, title="Darude - Sandstorm"):
+    def __init__(self, code, title="Darude - Sandstorm", duration=260):
+        self.duration = duration
         self.code = code
         self.title = title
         self.executed = False
