@@ -46,9 +46,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     playerWidth: '640',
     state: 'stopped'
   };
-  var data = {
-      sum: 0
-  };
 
   var results = [];
   var upcoming = [];
@@ -95,7 +92,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
       var d = $http.get("/" + service.channel + '/playlist');
         // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
-            data.sum = 0;
             playlist.length = 0;
             playlist.push.apply(playlist, d.data.playlistVideos);
             upcoming.length = 0;
@@ -216,9 +212,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   this.getUpcoming = function () {
     return upcoming;
   };
-  this.getExtraData = function () {
-      return data;
-  };
 }]);
 
 // Controller
@@ -274,7 +267,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
     init();
 
    function init() {
-      $scope.data = VideosService.getExtraData();
       $scope.playlist = VideosService.getPlaylist();
       $scope.upcoming = VideosService.getUpcoming();
       $scope.results = VideosService.getResults();
