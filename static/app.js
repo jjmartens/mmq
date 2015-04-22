@@ -75,6 +75,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
             upcoming.length = 0;
             upcoming.push.apply(upcoming, d.data.upcoming);
             youtube.videoTitle = d.data.current_title;
+            $rootScope.header = d.data.current_title;
         });
   };
 
