@@ -256,7 +256,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
         params: {
           key: 'AIzaSyBI27WBKxhL4TUZ1XAiPK5Z9CPBRfx7iKA',
           type: 'video',
-          maxResults: '6',
+          maxResults: '8',
           part: 'id,snippet',
           fields: 'items/id,items/snippet/title,items/snippet/description,items/snippet/thumbnails/default,items/snippet/channelTitle',
           q: this.query
@@ -290,6 +290,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
       $http.post('/' + $scope.channel + '/add', {"id": id}).
         success(function(results) {
             $scope.query = "";
+            $scope.results.length = 0;
             VideosService.poll();
 
         }).
