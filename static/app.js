@@ -127,9 +127,9 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
        rewrite = function(entry) {return {
             'id': entry.id.videoId,
             'title': entry.snippet.title,
-            'thumbnail': entry.snippet.thumbnails.default.url,
+            'thumbnail': entry.snippet.thumbnails.default.url
        }};
-      results.length = 0
+      results.length = 0;
       results.push.apply(results, this.map(rewrite, data.items));
   };
   this.bindPlayer = function (elementId) {
@@ -168,7 +168,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     youtube.videoId = id;
     youtube.videoTitle = title;
     return youtube;
-  }
+  };
 
   this.queueVideo = function (id, title, r_id) {
     upcoming.push({
