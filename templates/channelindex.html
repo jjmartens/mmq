@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/static/styles.css">
   </head>
   <body data-ng-controller="IndexController" ng-init="channel='{{ channel.slug }}';init()">
-  <nav class="navbar navbar-default" {% if channel.slug=="thalia-www" %}style="background-color:#ff00ff;"{% endif %}>
+  <nav class="navbar navbar-default navbar-fixed-top" {% if channel.slug=="thalia-www" %}style="background-color:#ff00ff;"{% endif %}>
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <a class="navbar-brand" href="/">MMQalpha</a>
