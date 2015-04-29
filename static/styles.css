@@ -13,3 +13,6 @@
     height:100%;
 }
 
+nav.navbar + div.row {
+    padding-top: 51px;
+}
