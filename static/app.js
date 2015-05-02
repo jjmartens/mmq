@@ -1,10 +1,6 @@
 var app = angular.module('MMQbeta', []);
 
 app.run(function () {
-  var tag = document.createElement('script');
-  tag.src = "http://www.youtube.com/iframe_api";
-  var firstScriptTag = document.getElementsByTagName('script')[0];
-  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 });
 
 
@@ -42,8 +38,8 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     playerId: null,
     videoId: null,
     videoTitle: null,
-    playerHeight: '480',
-    playerWidth: '640',
+    playerHeight: '280',
+    playerWidth: '100%',
     state: 'stopped'
   };
 
@@ -61,6 +57,9 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
 
   function onYoutubeReady (event) {
     $log.info('YouTube Player is ready');
+    service.launchPlayer(upcoming[0].code, upcoming[0].title);
+    service.archiveVideo(upcoming[0].r_id);
+    $rootScope.loading -= 1;
   }
 
   function onYoutubeStateChange (event) {
@@ -78,14 +77,9 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     $rootScope.$apply();
   }
 
-  this.startPoll =  function () {
-        service.poll();
-        $timeout(service.startPoll, 10000)
-  };
-
   this.startPlaylistPoll =  function () {
       service.playlistPoll();
-      $timeout(service.startPlaylistPoll, 5000)
+      $timeout(service.startPlaylistPoll, 10000);
   };
 
   this.playlistPoll = function () {
@@ -101,6 +95,10 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
         });
   };
 
+  this.startPoll =  function () {
+      service.poll();
+      $timeout(service.startPoll, 5000);
+  };
 
   this.poll =  function () {
         var d = $http.get("/" + service.channel + '/results');
@@ -110,19 +108,19 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
             upcoming.push.apply(upcoming, d.data.videos);
         });
   };
+
   this.pushState = function () {
       $log.info('Youtube API status is changed');
   };
-  this.activate = function () {
 
-  };
   this.map = function(lambda, values) {
-                 switch (values.length) {
-                    case 0: return values;
-                    case 1: return [lambda(values.shift())];
-                    default: return [lambda(values.shift())].concat(this.map(lambda, values));
-                 }
-              };
+         switch (values.length) {
+            case 0: return values;
+            case 1: return [lambda(values.shift())];
+            default: return [lambda(values.shift())].concat(this.map(lambda, values));
+         }
+  };
+
   this.listResults = function(data) {
        rewrite = function(entry) {return {
             'id': entry.id.videoId,
@@ -144,7 +142,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
       width: youtube.playerWidth,
       playerVars: {
         rel: 0,
-        showinfo: 0
+        showinfo: 1
       },
       events: {
         'onReady': onYoutubeReady,
@@ -196,10 +194,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
       }
     }
   };
-  this.getTitle = function(id) {
-      var d = $http.jsonp('http://gdata.youtube.com/feeds/api/videos/'+ id + '?alt=json-in-script&callback=JSON_CALLBACK&prettyprint=true&fields=title');
-      return d;
-  };
+
   this.getResults = function () {
       return results;
   };
@@ -214,56 +209,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 }]);
 
-// Controller
-app.controller('VideosController', function ($scope, $http, $log,$timeout, VideosService) {
-    init();
-
-   function init() {
-      $scope.youtube = VideosService.getYoutube();
-      $scope.upcoming = VideosService.getUpcoming();
-      $scope.playlist = true;
-      $scope.maxId = 0;
-    }
-
-    $scope.changeState = function () {
-        VideosService.changeState();
-    }
-
-    $scope.init = function() {
-       VideosService.channel = $scope.channel;
-       $log.log(VideosService.channel);
-       VideosService.startPoll();
-    };
-
-    $scope.launch = function (code, title, r_id) {
-      VideosService.launchPlayer(code, title);
-      VideosService.archiveVideo(r_id);
-      VideosService.poll();
-      $log.info('Launched id:' + code + ' and title:' + title);
-    };
-
-    $scope.queue = function (id, title, r_id) {
-      VideosService.queueVideo(id, title, r_id);
-      $log.info('Queued id:' + r_id + ' and title:' + title);
-    };
-
-    $scope.add = function () {
-      $http.post('/' + $scope.channel + '/add', {"id": this.query}).
-        success(function(results) {
-         $scope.query = "";
-          VideosService.poll();
-        }).
-        error(function(error) {
-          $log.log(error);
-        });
-    };
-
-    $scope.tabulate = function (state) {
-      $scope.playlist = state;
-    };
-});
-
-app.controller('IndexController', function ($scope, $http, $log,$timeout, VideosService) {
+app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootScope, VideosService) {
     init();
 
    function init() {
@@ -271,6 +217,8 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
       $scope.upcoming = VideosService.getUpcoming();
       $scope.results = VideosService.getResults();
       $scope.youtube = VideosService.getYoutube();
+      $scope.playing = false;
+      $rootScope.loading = 0;
     };
 
     $scope.search = function () {
@@ -299,6 +247,21 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
        VideosService.startPlaylistPoll();
     };
 
+    $scope.changeState = function () {
+        VideosService.changeState();
+    }
+
+    $scope.launch = function (code, title, r_id) {
+        if($scope.playing == true) {
+            VideosService.launchPlayer(code, title);
+            VideosService.archiveVideo(r_id);
+            VideosService.poll();
+            $log.info('Launched id:' + code + ' and title:' + title);
+        } else {
+            $log.log("nop kan niet");
+        }
+    };
+
     $scope.queue = function (id) {
       $http.post('/' + $scope.channel + '/add_existing', {"id": id}).
         success(function(results) {
@@ -308,6 +271,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
           $log.log(error);
         });
     }
+
     $scope.add = function (id) {
       $http.post('/' + $scope.channel + '/add', {"id": id}).
         success(function(results) {
@@ -319,5 +283,17 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, Videos
           $log.log(error);
         });
     };
+
+    $scope.startBroadcast = function() {
+        if($scope.playing == false) {
+            VideosService.startPoll();
+            $rootScope.loading += 1;
+            var tag = document.createElement('script');
+            tag.src = "http://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            $scope.playing = true;
+        }
+    }
 
 });

@@ -57,17 +57,6 @@ def addchannel():
         errors.append("Unable to add channel to database.")
         return jsonify({"error": errors})
 
-
-
-
-@app.route('/<channel_slug>/playback', methods=['GET', 'POST'])
-def broadcast(channel_slug):
-    channel = Channel.query.filter_by(slug=channel_slug).first()
-    if not channel:
-        return "404 - Not found"
-    return render_template('broadcast.html', channel=channel)
-
-
 @app.route('/<channel_slug>/add', methods=['POST'])
 def add(channel_slug):
     data = json.loads(request.data.decode())
