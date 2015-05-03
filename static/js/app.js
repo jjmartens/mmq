@@ -60,6 +60,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     service.launchPlayer(upcoming[0].code, upcoming[0].title);
     service.archiveVideo(upcoming[0].r_id);
     $rootScope.loading -= 1;
+    service.poll();
   }
 
   function onYoutubeStateChange (event) {
@@ -271,6 +272,15 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
           $log.log(error);
         });
     }
+    $scope.remove = function(r_id) {
+        $http.post('/'+$scope.channel + '/remove' ,{"id": r_id}).
+            success(function(results) {
+                VideosService.poll();
+            }).
+            error(function(error) {
+              $log.log(error);
+            });
+    };
 
     $scope.add = function (id) {
       $http.post('/' + $scope.channel + '/add', {"id": id}).
