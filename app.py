@@ -130,6 +130,21 @@ def finish_command(channel_slug):
     db.session.commit()
     return jsonify({"succes":True})
 
+@app.route('/<channel_slug>/remove', methods=['POST'])
+def remove_command(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return "404 - Not found"
+    data=request.get_json()
+    if 'id' not in data:
+        return jsonify({'succes':False, "message" : "Geen valide post request"})
+
+    record = Record.query.filter_by(id=data['id'],channel_id=channel.id).first()
+    db.session.delete(record)
+    db.session.commit()
+    return jsonify({"succes":True})
+
+
 
 
 @app.route("/<channel_slug>/results", methods=['GET'])

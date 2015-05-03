@@ -78,8 +78,11 @@
                         <th>Time</th>
                         <th>Until</th>
                     </tr>
-                    <tr data-ng-repeat="video in upcoming" data-ng-click="launch(video.code, video.title, video.r_id)">
-                      <td><p class="item-title">{[{video.title}]}</p></td>
+                    <tr data-ng-repeat="video in upcoming">
+                      <td>
+                          <span class="glyphicon glyphicon-remove pull-right" data-ng-click="remove(video.r_id)" aria-hidden="true"></span>
+                          <p class="item-title" data-ng-click="launch(video.code, video.title, video.r_id)">{[{video.title}]}</p>
+                      </td>
                       <td>{[{video.duration | secondsToTime}]}</td>
                       <td ng-show="$index != 0">{[{(upcoming | runningTotal:'duration':$index-1) | secondsToTime}]}</td>
                       <td ng-show="$index == 0">Soon</td>
