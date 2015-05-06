@@ -263,8 +263,8 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         }
     };
 
-    $scope.queue = function (id) {
-      $http.post('/' + $scope.channel + '/add_existing', {"id": id}).
+    $scope.queue = function (id, title) {
+      $http.post('/' + $scope.channel + '/add', {"id": id, "title":title}).
         success(function(results) {
             VideosService.poll();
         }).
@@ -272,6 +272,19 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
           $log.log(error);
         });
     }
+
+    $scope.add = function (id, title) {
+      $http.post('/' + $scope.channel + '/add', {"id": id, "title":title}).
+        success(function(results) {
+            $scope.query = "";
+            $scope.results.length = 0;
+            VideosService.poll();
+        }).
+        error(function(error) {
+          $log.log(error);
+        });
+    };
+
     $scope.remove = function(r_id) {
         $http.post('/'+$scope.channel + '/remove' ,{"id": r_id}).
             success(function(results) {
@@ -282,17 +295,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
             });
     };
 
-    $scope.add = function (id) {
-      $http.post('/' + $scope.channel + '/add', {"id": id}).
-        success(function(results) {
-            $scope.query = "";
-            $scope.results.length = 0;
-            VideosService.poll();
-        }).
-        error(function(error) {
-          $log.log(error);
-        });
-    };
 
     $scope.startBroadcast = function() {
         if($scope.playing == false) {

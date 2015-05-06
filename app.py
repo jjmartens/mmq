@@ -69,42 +69,14 @@ def add(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return "404 - Not found"
-
     # see if video exists if it doesnt make a new one
     video = Video.query.filter_by(code=id).first()
     if not video:
-        url = 'http://gdata.youtube.com/feeds/api/videos/{}?alt=json&v=2'.format(id)
-        title_data = json.loads(urllib.urlopen(url).read())
-        duration =  title_data['entry']['media$group']['media$content'][0]['duration']
-        title = title_data['entry']['title']['$t']
+        title = data["title"]
+        duration =  183
         video = Video(id, title=title,duration=duration)
         db.session.add(video)
         db.session.commit()
-    try:
-        record = Record(channel.id , video.id)
-        db.session.add(record)
-        db.session.commit()
-        return jsonify({"succes": True})
-    except:
-        errors.append("Unable to add item to database.")
-        return jsonify({"error": errors})
-
-
-@app.route('/<channel_slug>/add_existing', methods=['POST'])
-def add_existing(channel_slug):
-    data = json.loads(request.data.decode())
-    id = data["id"]
-    errors = []
-    channel = Channel.query.filter_by(slug=channel_slug).first()
-    if not channel:
-        errors.append("channel does not exist (anymore)")
-        return jsonify({"error" : errors})
-
-    # see if video exists if it doesnt make a new one
-    video = Video.query.filter_by(id=id).first()
-    if not video:
-        errors.append("Video does not exist (anymore)")
-        return jsonify({"error" : errors})
     try:
         record = Record(channel.id , video.id)
         db.session.add(record)
