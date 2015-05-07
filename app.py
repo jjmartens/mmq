@@ -9,18 +9,16 @@ import urllib
 #################
 # configuration #
 #################
+if __name__ == '__main__':
+    print "This is not how you should run this application. "
+    print "Try python manage.py runserver"
+    exit()
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:@localhost/mmq'
 db = SQLAlchemy(app)
-
-
 
 from models import Channel,Record,Video
 
-###########
-# utility #
-###########
 
 ##########
 # routes #
@@ -149,11 +147,3 @@ def get_playlist(channel_slug):
     else:
         data['current_title'] = "no playback detected"
     return jsonify(data)
-
-
-
-if __name__ == '__main__':
-  http_server = HTTPServer(WSGIContainer(app))
-  http_server.listen(5000, address='0.0.0.0')
-  IOLoop.instance().start()
-
