@@ -9,9 +9,9 @@ You can find a working demo on http://mmq.audio. Note: please make a channel for
 
 ## Installation
 - Clone this repo
-- Install requirements with `pip install -r requirements.txt` 
-- make a database with queries given by `python exportstructure.py` (will fix this)
+- Install requirements with `pip install -r requirements.txt`
 - Change database info in manage.py
+- make a database and migrate scheme with `python manage.py db upgrade`
 - Insert your own youtube api key in app.js
 - Run server with `python manage.py runserver`
 
