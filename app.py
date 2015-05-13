@@ -43,7 +43,7 @@ def channels():
 
 @app.route('/add', methods=['POST'])
 def addchannel():
-    data = json.loads(request.data.decode())
+    data = json.loads(request.data)
     title = data["title"]
     errors = {}
     try:
@@ -57,7 +57,7 @@ def addchannel():
 
 @app.route('/<channel_slug>/add', methods=['POST'])
 def add(channel_slug):
-    data = json.loads(request.data.decode())
+    data = json.loads(request.data)
     id = data["id"]
     errors = []
     if len(id) != 11:
