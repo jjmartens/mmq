@@ -95,7 +95,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
             upcoming.push.apply(upcoming, d.data.upcoming);
             vol = d.data.volume;
             if(youtube.player) {
-                youtube.player.setVolume(d.data.volume);
+                youtube.player.setVolume(vol);
             }
             youtube.videoTitle = d.data.current_title;
             $rootScope.header = d.data.current_title;
@@ -167,6 +167,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     youtube.player.loadVideoById(id);
     youtube.videoId = id;
     youtube.videoTitle = title;
+    service.poll();
     return youtube;
   };
 
