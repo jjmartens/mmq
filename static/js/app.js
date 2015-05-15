@@ -76,6 +76,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
         youtube.state = 'ended';
         service.launchPlayer(upcoming[0].code, upcoming[0].title);
         service.archiveVideo(upcoming[0].r_id);
+        VideosService.poll();
     }
     $rootScope.$apply();
   }
@@ -167,7 +168,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     youtube.player.loadVideoById(id);
     youtube.videoId = id;
     youtube.videoTitle = title;
-    service.poll();
     return youtube;
   };
 
