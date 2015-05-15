@@ -43,6 +43,8 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     state: 'stopped'
   };
 
+  var vol = 50;
+
   var results = [];
   var upcoming = [];
   var playlist = [];
@@ -80,7 +82,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
 
   this.startPlaylistPoll =  function () {
       service.playlistPoll();
-      $timeout(service.startPlaylistPoll, 10000);
+      $timeout(service.startPlaylistPoll, 5000);
   };
 
   this.playlistPoll = function () {
@@ -91,14 +93,13 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
             playlist.push.apply(playlist, d.data.playlistVideos);
             upcoming.length = 0;
             upcoming.push.apply(upcoming, d.data.upcoming);
+            vol = d.data.volume;
+            if(youtube.player) {
+                youtube.player.setVolume(d.data.volume);
+            }
             youtube.videoTitle = d.data.current_title;
             $rootScope.header = d.data.current_title;
         });
-  };
-
-  this.startPoll =  function () {
-      service.poll();
-      $timeout(service.startPoll, 5000);
   };
 
   this.poll =  function () {
@@ -167,6 +168,25 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     youtube.videoId = id;
     youtube.videoTitle = title;
     return youtube;
+  };
+
+  this.incrementVol = function () {
+      vol = vol + 10;
+      $http.post('/' + service.channel + '/set/volume', {"vol": vol}).
+        success(function (results) {
+        }).
+        error(function (error) {
+            $log.log(error);
+        });
+  };
+  this.lowerVol = function () {
+      vol = vol - 10;
+      $http.post('/' + service.channel + '/set/volume', {"vol": vol}).
+        success(function (results) {
+        }).
+        error(function (error) {
+            $log.log(error);
+        });
   };
 
   this.queueVideo = function (id, title, r_id) {
@@ -295,10 +315,15 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
             });
     };
 
+    $scope.incrementVol = function () {
+        VideosService.incrementVol();
+    }
 
+    $scope.lowerVol = function () {
+        VideosService.lowerVol();
+    }
     $scope.startBroadcast = function() {
         if($scope.playing == false) {
-            VideosService.startPoll();
             $rootScope.loading += 1;
             var tag = document.createElement('script');
             tag.src = "http://www.youtube.com/iframe_api";

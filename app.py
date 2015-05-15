@@ -23,7 +23,6 @@ from models import Channel,Record,Video
 ##########
 # routes #
 ##########
-
 @app.route('/<channel_slug>', methods=['GET', 'POST'])
 def channelindex(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
@@ -114,6 +113,19 @@ def remove_command(channel_slug):
     db.session.commit()
     return jsonify({"succes":True})
 
+@app.route("/<channel_slug>/set/volume", methods=['POST'])
+def set_volume(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return "404 - Not found"
+    data=request.get_json()
+    if 'vol' not in data:
+        return jsonify({'succes':False, "message" : "Geen valide post request"})
+    if int(data['vol']) > 0 and int(data['vol']) < 101:
+        channel.volume = int(data['vol'])
+        db.session.commit()
+    return jsonify({"succes":True})
+
 
 
 
@@ -141,7 +153,11 @@ def get_playlist(channel_slug):
     q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
     current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
-    data = {"playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q), "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results)}
+    data = {
+        "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
+        "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results),
+        "volume" : channel.volume
+    }
     if current:
         data['current_title'] = current.video.title
     else:

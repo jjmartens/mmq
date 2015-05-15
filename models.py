@@ -50,9 +50,11 @@ class Channel(db.Model):
     records = db.relationship('Record', backref='channel',
                             lazy='dynamic')
     slug = db.Column(db.String(64))
+    volume = db.Column(db.Integer)
 
     def __init__(self,title):
         self.title = title
         self.slug = slugify(title)
+        self.volume = 50
 
 
