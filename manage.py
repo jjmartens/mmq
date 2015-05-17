@@ -8,6 +8,7 @@ from app import app, db
 
 manager = Manager(app)
 app.config['SQLALCHEMY_DATABASE_URI'] ='mysql://root:@localhost/mmq'
+app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
 
 manager.add_command('db', MigrateCommand)
 migrate = Migrate(app,db)
