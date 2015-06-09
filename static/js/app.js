@@ -317,7 +317,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         error(function(error) {
           $log.log(error);
         });
-    };
+    });
 
     $scope.remove = function(r_id) {
         $http.post('/'+$scope.channel + '/remove' ,{"id": r_id}).
