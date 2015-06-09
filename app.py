@@ -71,7 +71,7 @@ def add(channel_slug):
     video = Video.query.filter_by(code=id).first()
     if not video:
         title = data["title"]
-        duration =  183
+        duration = data["duration"]
         video = Video(id, title=title,duration=duration)
         db.session.add(video)
         db.session.commit()

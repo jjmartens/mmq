@@ -295,7 +295,20 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     }
 
     $scope.add = function (id, title) {
-      $http.post('/' + $scope.channel + '/add', {"id": id, "title":title}).
+	  $http.get('https://www.googleapis.com/youtube/v3/videos', {
+        params: {
+          key: 'AIzaSyBI27WBKxhL4TUZ1XAiPK5Z9CPBRfx7iKA',
+          part: 'contentDetails',
+		  id: id 
+        }
+      })
+      .success( function (data) {
+		 var match = (data.items[0].contentDetails.duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/));
+		 var hours = (parseInt(match[1]) || 0);
+		 var minutes = (parseInt(match[2]) || 0);
+		 var seconds = (parseInt(match[3]) || 0);
+		 var duration = hours * 3600 + minutes * 60 + seconds;
+		 $http.post('/' + $scope.channel + '/add', {"id": id, "title":title, "duration":duration }).
         success(function(results) {
             $scope.query = "";
             $scope.results.length = 0;
