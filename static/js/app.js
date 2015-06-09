@@ -295,7 +295,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     }
 
     $scope.add = function (id, title) {
-	  $http.get('https://www.googleapis.com/youtube/v3/videos', {
+      $http.get('https://www.googleapis.com/youtube/v3/videos', {
         params: {
           key: 'AIzaSyBI27WBKxhL4TUZ1XAiPK5Z9CPBRfx7iKA',
           part: 'contentDetails',
@@ -317,7 +317,8 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         error(function(error) {
           $log.log(error);
         });
-    });
+      })
+    };
 
     $scope.remove = function(r_id) {
         $http.post('/'+$scope.channel + '/remove' ,{"id": r_id}).
