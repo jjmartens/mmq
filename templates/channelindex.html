@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/styles.css">
   </head>
-  <body data-ng-controller="IndexController" ng-init="channel='{{ channel.slug }}';init()">
+  <body data-ng-controller="IndexController" ng-init="channel='{{ channel.slug }}';channelselect=-1;init()">
 
     <div id="loading" data-ng-show="$root.loading!=0" style="display:none;">
         <img src="static/img/spinner.gif" class="spinner"/>
@@ -25,6 +25,9 @@
        <div class="form-group pull-right">
             <button class="btn btn-default pull-right" data-ng-click="startBroadcast()">
                Start broadcast
+            </button>
+           <button class="btn btn-default pull-right" data-ng-click="channelselect=channelselect * -1">
+               Select channel
             </button>
        </div>
     </div><!-- /.navbar-collapse -->
@@ -100,6 +103,15 @@
                   </table>
                 </div>
             </div>
+        </div>
+        <div id="sidebar-wrapper" class="col-md-2" data-ng-show="channelselect==1" >
+            <h3>Current channel: {[{channel}]} </h3>
+            <table class="table table-striped" id="playlist">
+                <tr data-ng-repeat="channel in channels">
+                    <td><p class="item-title" data-ng-click="changechannel(channel.slug)")>{[{channel.title}]}<span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></p></td>
+                </tr>
+            </table>
+
         </div>
     </div>
     <script src="/static/js/angular.min.js"></script>

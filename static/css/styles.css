@@ -35,3 +35,50 @@ nav.navbar + div.row {
     margin-top: -32px;  /* -1 * image height / 2 */
     display: block;
 }
+
+ body {
+     overflow: hidden;
+ }
+ #wrapper {
+     min-height: 100%;
+     height: 100%;
+     width: 100%;
+     position: absolute;
+     top: 0px;
+     left: 0;
+     display: inline-block;
+ }
+ #main-wrapper {
+     height: 100%;
+     overflow-y: auto;
+     padding: 50px 0 0px 0;
+     transition: all .5s linear;
+     -moz-transition: all .5s linear;
+     -webkit-transition: all .5s linear;
+     -o-transition: all .5s linear;
+ }
+ .no-transition {
+     -webkit-transition: none !important;
+     -moz-transition: none !important;
+     -o-transition: none !important;
+     -ms-transition: none !important;
+     transition: none !important;
+ }
+ #sidebar-wrapper {
+     background-color:#f0f0f0;
+     height: 100%;
+     padding: 50px 0 0px 0;
+     position: fixed;
+    right:0;
+ }
+ #sidebar {
+     border-right: 1px solid gray;
+     position: relative;
+     height: 100%;
+     overflow-y: auto;
+     padding: 10px 15px 0;
+     overflow-x: hidden;
+ }
+ .page-header {
+     margin-top: 10px;
+ }

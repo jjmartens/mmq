@@ -240,6 +240,11 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
       $scope.results = VideosService.getResults();
       $scope.youtube = VideosService.getYoutube();
       $scope.playing = false;
+      var d = $http.get("/channels");
+        // Call the async method and then do stuff with what is returned inside our own then function
+      d.then(function(d) {
+            $scope.channels = d.data.channels;
+        });
       $rootScope.loading = 0;
     };
 
@@ -294,6 +299,16 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         });
     }
 
+    $scope.changechannel = function (slug) {
+        $scope.channel = slug;
+        VideosService.channel = $scope.channel;
+        $scope.channelselect = -1;
+        VideosService.poll();
+        VideosService.playlistPoll();
+
+    }
+
+
     $scope.add = function (id, title) {
       $http.get('https://www.googleapis.com/youtube/v3/videos', {
         params: {
@@ -337,6 +352,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     $scope.lowerVol = function () {
         VideosService.lowerVol();
     }
+    
     $scope.startBroadcast = function() {
         if($scope.playing == false) {
             $rootScope.loading += 1;
