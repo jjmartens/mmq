@@ -12,7 +12,7 @@
     <div id="loading" data-ng-show="$root.loading!=0" style="display:none;">
         <img src="static/img/spinner.gif" class="spinner"/>
     </div>
-  <nav class="navbar navbar-default navbar-fixed-top" {% if channel.slug=="thalia-www" %}style="background-color:#ff00ff;"{% endif %}>
+  <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <a class="navbar-brand" href="/">MMQalpha</a>
@@ -36,8 +36,6 @@
 </nav>
     <div class="row">
         <div class="col-lg-4 col-sm-4 col-xs-4 col-md-4 sidebar" id="playlist">
-            <div class="row">
-                <div class="col-lg-12">
                     <h3>Search a song on youtube <i class="glyphicon glyphicon-volume-down" data-ng-click="lowerVol()"></i><i class="glyphicon glyphicon-volume-up" data-ng-click="incrementVol()"></i></h3>
                   <form class="form-inline search" role="search" data-ng-submit="search()">
                     <div class="form-group">
@@ -45,10 +43,6 @@
                     </div>
                     <button class="btn btn-default" type="submit" id="submit"> Search</button>
                   </form>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-12">
                     <table class="table table-striped" id="playlist">
                         <tr>
                             <th>Search results:</th>
@@ -66,15 +60,9 @@
                               </div>
                           </td>
                         </tr>
-                      </table>
-                </div>
-                <div class="col-xs-12" id="placeholder"></div>
-
-            </div>
+                    </table>
         </div>
-        <div class="col-lg-8 col-sm-8 col-xs-8 col-md-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-        <div class="row">
-            <div class="col-lg-6" id="playlist">
+        <div class="col-xs-4" id="playlist">
                   <table class="table table-striped" id="upcoming">
                     <tr>
                         <th>Title</th>
@@ -91,8 +79,8 @@
                       <td ng-show="$index == 0">Soon</td>
                     </tr>
                   </table>
-                </div>
-                <div class="col-lg-6" id="playlist">
+        </div>
+        <div class="col-xs-4" id="playlist">
                   <table class="table table-striped" id="playlist">
                     <tr>
                         <th>History:</th>
@@ -101,8 +89,6 @@
                       <td><p class="item-title" data-ng-click="queue(video.code, video.title)")>{[{video.title}]}<span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></p></td>
                     </tr>
                   </table>
-                </div>
-            </div>
         </div>
         <div id="sidebar-wrapper" class="col-md-2" data-ng-show="channelselect==1" >
             <h3>Current channel: {[{channel}]} </h3>
@@ -112,6 +98,15 @@
                 </tr>
             </table>
 
+        </div>
+    </div>
+    <div class="row">
+        <div class="footer col-xs-12">
+            <h4 style="text-align:center;width:100%;">
+                <span style="margin-right:20px;">MMQ is in early alpha, working client is not guaranteed! Feedback always appreciated.</span>
+                <a href="mailto:mmq@martns.nl" style="margin-right:20px;">contact</a>
+                <a href="http://www.github.com/jantjee314/mmq" style="margin-right:20px;">source</a>
+            </h4>
         </div>
     </div>
     <script>
