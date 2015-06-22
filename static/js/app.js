@@ -64,6 +64,18 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     $rootScope.loading -= 1;
     service.poll();
   }
+  function onYoutubeError (data) {
+    errno = data.data;
+    if(errno==100 || errno == 101 || errno==150) {
+        $log.log("Kan video niet laden skipt naar volgende");
+    } else {
+        $log.log("Er heeft zich een error voorgedaan die ik niet kan plaatsen. Sorry");
+    }
+    service.launchPlayer(upcoming[0].code, upcoming[0].title);
+    service.archiveVideo(upcoming[0].r_id);
+    service.poll();
+  }
+
 
   function onYoutubeStateChange (event) {
     if (event.data == YT.PlayerState.PLAYING) {
@@ -149,7 +161,8 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
       },
       events: {
         'onReady': onYoutubeReady,
-        'onStateChange': onYoutubeStateChange
+        'onStateChange': onYoutubeStateChange,
+        'onError': onYoutubeError
       }
     });
   };
