@@ -1,3 +1,5 @@
+[![Join the chat at https://gitter.im/jantjee314/mmq](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jantjee314/mmq?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## MMQ
 A small and shared music player powered by youtube build with a AngularJS frontend and a Flask backend.
 
