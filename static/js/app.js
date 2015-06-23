@@ -262,6 +262,11 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     };
 
     $scope.search = function () {
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'playlistAction',   // Required.
+          'eventAction': 'search'      // Required.
+        });
       $http.get('https://www.googleapis.com/youtube/v3/search', {
         params: {
           key: 'AIzaSyBI27WBKxhL4TUZ1XAiPK5Z9CPBRfx7iKA',
@@ -292,6 +297,11 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     }
 
     $scope.launch = function (code, title, r_id) {
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'broadcastControl',   // Required.
+          'eventAction': 'launchCustom'      // Required.
+        });
         if($scope.playing == true) {
             VideosService.launchPlayer(code, title);
             VideosService.archiveVideo(r_id);
@@ -303,6 +313,11 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     };
 
     $scope.queue = function (id, title) {
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'playlistAction',   // Required.
+          'eventAction': 'songAddedAgain'      // Required.
+        });
       $http.post('/' + $scope.channel + '/add', {"id": id, "title":title}).
         success(function(results) {
             VideosService.poll();
@@ -310,7 +325,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         error(function(error) {
           $log.log(error);
         });
-    }
+    };
 
     $scope.changechannel = function (slug) {
         $scope.channel = slug;
@@ -319,10 +334,15 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         VideosService.poll();
         VideosService.playlistPoll();
 
-    }
+    };
 
 
     $scope.add = function (id, title) {
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'playlistAction',   // Required.
+          'eventAction': 'songAdded'      // Required.
+        });
       $http.get('https://www.googleapis.com/youtube/v3/videos', {
         params: {
           key: 'AIzaSyBI27WBKxhL4TUZ1XAiPK5Z9CPBRfx7iKA',
@@ -349,6 +369,11 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     };
 
     $scope.remove = function(r_id) {
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'playlistAction',   // Required.
+          'eventAction': 'removeSong'      // Required.
+        });
         $http.post('/'+$scope.channel + '/remove' ,{"id": r_id}).
             success(function(results) {
                 VideosService.poll();
@@ -360,14 +385,29 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
 
     $scope.incrementVol = function () {
         VideosService.incrementVol();
-    }
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'volumeControl',   // Required.
+          'eventAction': 'volUp'      // Required.
+        });
+    };
 
     $scope.lowerVol = function () {
         VideosService.lowerVol();
-    }
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'volumeControl',   // Required.
+          'eventAction': 'volDown'      // Required.
+        });
+    };
     
     $scope.startBroadcast = function() {
         if($scope.playing == false) {
+            ga('send', {
+              'hitType': 'event',          // Required.
+              'eventCategory': 'broadcastControl',   // Required.
+              'eventAction': 'startBroadcast'      // Required.
+            });
             $rootScope.loading += 1;
             var tag = document.createElement('script');
             tag.src = "http://www.youtube.com/iframe_api";
