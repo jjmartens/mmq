@@ -1,11 +1,9 @@
-from tornado.wsgi import WSGIContainer
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
 from flask import Flask, render_template, request, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 from  sqlalchemy.sql.expression import func
+import time
 import json
-import urllib
+import hashlib
 #################
 # configuration #
 #################
@@ -128,39 +126,37 @@ def set_volume(channel_slug):
     return jsonify({"succes":True})
 
 
-
-
 @app.route("/<channel_slug>/results", methods=['GET'])
 def get_results(channel_slug):
-    channel = Channel.query.filter_by(slug=channel_slug).first()
-    if not channel:
-        return "404 - Not found"
-    results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
-    if not results:
-        random_rec = Record.query.filter_by(channel_id=channel.id).order_by(func.rand()).first()
-        if random_rec:
-            entry = Record(channel.id, random_rec.video.id)
-            db.session.add(entry)
-            db.session.commit()
-            results = [entry]
-    return jsonify({"videos" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results)})
+    return get_playlist(channel_slug)
 
-
-@app.route("/<channel_slug>/playlist", methods=['GET'])
+@app.route("/<channel_slug>/playlist", methods=['POST'])
 def get_playlist(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
+    print "new request"
+    postdata=request.get_json()
     if not channel:
-        return "404 - Not found"
-    q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
-    results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
-    current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
-    data = {
-        "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
-        "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results),
-        "volume" : channel.volume
-    }
-    if current:
-        data['current_title'] = current.video.title
-    else:
-        data['current_title'] = "no playback detected"
+        return jsonify({"error" : "404 - Not found"})
+    for i in range(30):
+        q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
+        results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
+        current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
+        data = {
+            "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
+            "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results),
+            "volume" : channel.volume
+        }
+        if current:
+            data['current_title'] = current.video.title
+        else:
+            data['current_title'] = "no playback detected"
+        jsondata = jsonify(data)
+        hex = hashlib.md5(jsondata.get_data()).hexdigest()
+        if postdata['hex'] != hex:
+            print hex
+            data['hex'] = hex
+            return jsonify(data)
+        time.sleep(0.1)
+    data['hex'] = postdata['hex']
     return jsonify(data)
+

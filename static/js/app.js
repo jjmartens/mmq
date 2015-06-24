@@ -44,11 +44,10 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   var vol = 50;
-
+  var hex = "";
   var results = [];
   var upcoming = [];
   var playlist = [];
-
   $window.onYouTubeIframeAPIReady = function () {
     $log.info('Youtube API is ready');
     youtube.ready = true;
@@ -95,11 +94,10 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
 
   this.startPlaylistPoll =  function () {
       service.playlistPoll();
-      $timeout(service.startPlaylistPoll, 5000);
   };
 
   this.playlistPoll = function () {
-      var d = $http.get("/" + service.channel + '/playlist');
+      var d = $http.post("/" + service.channel + '/playlist', {'hex': hex}, {'timeout': 30000});
         // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
             playlist.length = 0;
@@ -107,20 +105,16 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
             upcoming.length = 0;
             upcoming.push.apply(upcoming, d.data.upcoming);
             vol = d.data.volume;
+            hex = d.data.hex;
             if(youtube.player) {
                 youtube.player.setVolume(vol);
             }
             youtube.videoTitle = d.data.current_title;
             $rootScope.header = d.data.current_title;
-        });
-  };
-
-  this.poll =  function () {
-        var d = $http.get("/" + service.channel + '/results');
-        // Call the async method and then do stuff with what is returned inside our own then function
-        d.then(function(d) {
-            upcoming.length = 0;
-            upcoming.push.apply(upcoming, d.data.videos);
+            service.playlistPoll();
+        },
+        function(d) {
+            $log.log(d);
         });
   };
 
@@ -284,7 +278,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
       .error( function () {
         $log.info('Search error');
       });
-    }
+    };
 
 
     $scope.init = function() {
@@ -294,7 +288,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
 
     $scope.changeState = function () {
         VideosService.changeState();
-    }
+    };
 
     $scope.launch = function (code, title, r_id) {
         ga('send', {
@@ -305,7 +299,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         if($scope.playing == true) {
             VideosService.launchPlayer(code, title);
             VideosService.archiveVideo(r_id);
-            VideosService.poll();
             $log.info('Launched id:' + code + ' and title:' + title);
         } else {
             $log.log("nop kan niet");
@@ -320,7 +313,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         });
       $http.post('/' + $scope.channel + '/add', {"id": id, "title":title}).
         success(function(results) {
-            VideosService.poll();
         }).
         error(function(error) {
           $log.log(error);
@@ -331,9 +323,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         $scope.channel = slug;
         VideosService.channel = $scope.channel;
         $scope.channelselect = -1;
-        VideosService.poll();
-        VideosService.playlistPoll();
-
     };
 
 
@@ -360,7 +349,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         success(function(results) {
             $scope.query = "";
             $scope.results.length = 0;
-            VideosService.poll();
         }).
         error(function(error) {
           $log.log(error);
@@ -376,7 +364,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         });
         $http.post('/'+$scope.channel + '/remove' ,{"id": r_id}).
             success(function(results) {
-                VideosService.poll();
             }).
             error(function(error) {
               $log.log(error);
