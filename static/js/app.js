@@ -248,6 +248,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     init();
 
    function init() {
+      $scope.viewId   = 0;
       $scope.playlist = VideosService.getPlaylist();
       $scope.upcoming = VideosService.getUpcoming();
       $scope.results = VideosService.getResults();
