@@ -6,6 +6,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from  sqlalchemy.sql.expression import func
 import json
 import urllib
+import random
 #################
 # configuration #
 #################
@@ -138,7 +139,9 @@ def get_results(channel_slug):
         return "404 - Not found"
     results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
     if not results:
-        random_rec = Record.query.filter_by(channel_id=channel.id).order_by(func.rand()).first()
+        random_rec_q = Record.query.filter_by(channel_id=channel.id)
+        rand = random.randrange(0, random_rec_q.count())
+        random_rec = random_rec_q.all()[rand]
         if random_rec:
             entry = Record(channel.id, random_rec.video.id)
             db.session.add(entry)
