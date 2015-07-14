@@ -22,6 +22,7 @@
           <ul class="nav navbar-nav">
               <li><a ng-class="{ active: viewId == 0}" data-ng-click="viewId=0;">Broadcast</a></li>
               <li><a ng-class="{ active: viewId == 1}" data-ng-click="viewId=1;">Playlist</a></li>
+              <li><h4 id="current">Currently playing: {[{ youtube.videoTitle }]}</h4></li>
           </ul>
            <div class="form-group pull-right">
                 <button class="btn btn-default pull-right" data-ng-click="startBroadcast()">
