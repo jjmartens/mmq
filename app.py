@@ -117,7 +117,7 @@ def remove_command(channel_slug):
     db.session.commit()
     return jsonify({"succes":True})
 
-@app.route("/<channel_slug>/set/volume", methods=['POST','GET'])
+@app.route("/<channel_slug>/set/volume", methods=['POST'])
 def set_volume(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:

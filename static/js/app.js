@@ -44,7 +44,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   var vol = 50;
-  var update_id = 0;
+  var update_id = -1;
   var results = [];
   var upcoming = [];
   var playlist = [];
@@ -61,7 +61,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     service.launchPlayer(upcoming[0].code, upcoming[0].title);
     service.archiveVideo(upcoming[0].r_id);
     $rootScope.loading -= 1;
-    service.poll();
   }
   function onYoutubeError (data) {
     errno = data.data;
@@ -72,7 +71,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     }
     service.launchPlayer(upcoming[0].code, upcoming[0].title);
     service.archiveVideo(upcoming[0].r_id);
-    service.poll();
   }
 
 
@@ -87,7 +85,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
         youtube.state = 'ended';
         service.launchPlayer(upcoming[0].code, upcoming[0].title);
         service.archiveVideo(upcoming[0].r_id);
-        service.poll();
     }
     $rootScope.$apply();
   }
