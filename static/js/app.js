@@ -97,7 +97,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   this.playlistPoll = function () {
-      var d = $http.post("/" + service.channel + '/playlist', {'update_id': update_id}, {'timeout': 40000});
+      var d = $http.post("/" + service.channel + '/playlist', {'update_id': update_id}, {'timeout': 200000});
         // Call the async method and then do stuff with what is returned inside our own then function
         console.log("starting up...." + update_id);
 
@@ -121,6 +121,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
         },
         function(d) {
             $log.log(d);
+            $timeout(service.playlistPoll,5000);
         });
   };
 
