@@ -4,6 +4,8 @@ from  sqlalchemy.sql.expression import func
 import time
 import json
 import hashlib
+import urllib
+import random
 #################
 # configuration #
 #################
@@ -18,7 +20,6 @@ db = SQLAlchemy(app)
 
 from models import Channel,Record,Video
 
-
 ##########
 # routes #
 ##########
@@ -26,8 +27,9 @@ from models import Channel,Record,Video
 def channelindex(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
-        return "404 - Not found"
-    return render_template('channelindex.html', channel=channel)
+        return jsonify({"msg","notfound"})
+    records = db.session.query(func.count(Record.id).label('aantal'), Video.code.label('code'), Video.title.label('title'), Video.duration.label('duration')).filter(Record.channel_id==channel.id).join(Video).group_by(Video.id).all()
+    return render_template('channelindex.html', channel=channel, records=records)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -64,7 +66,8 @@ def add(channel_slug):
 
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
-        return "404 - Not found"
+        return jsonify({"msg","notfound"})
+
     # see if video exists if it doesnt make a new one
     video = Video.query.filter_by(code=id).first()
     if not video:
@@ -75,6 +78,7 @@ def add(channel_slug):
         db.session.commit()
     try:
         record = Record(channel.id , video.id)
+        channel.update_id = channel.update_id + 1
         db.session.add(record)
         db.session.commit()
         return jsonify({"succes": True})
@@ -86,7 +90,7 @@ def add(channel_slug):
 def finish_command(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
-        return "404 - Not found"
+        return jsonify({"msg","notfound"})
     data=request.get_json()
     if 'id' not in data:
         return jsonify({'succes':False, "message" : "Geen valide post request"})
@@ -94,6 +98,7 @@ def finish_command(channel_slug):
     record = Record.query.filter_by(id=data['id'],channel_id=channel.id).first()
     if not record:
         return "404 - Not found"
+    channel.update_id = channel.update_id + 1
     record.finish()
     db.session.commit()
     return jsonify({"succes":True})
@@ -102,61 +107,57 @@ def finish_command(channel_slug):
 def remove_command(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
-        return "404 - Not found"
+        return jsonify({"msg","notfound"})
     data=request.get_json()
     if 'id' not in data:
         return jsonify({'succes':False, "message" : "Geen valide post request"})
-
     record = Record.query.filter_by(id=data['id'],channel_id=channel.id).first()
+    channel.update_id = channel.update_id + 1
     db.session.delete(record)
     db.session.commit()
     return jsonify({"succes":True})
 
-@app.route("/<channel_slug>/set/volume", methods=['POST'])
+@app.route("/<channel_slug>/set/volume", methods=['POST','GET'])
 def set_volume(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
-        return "404 - Not found"
+        return jsonify({"msg","notfound"})
     data=request.get_json()
     if 'vol' not in data:
         return jsonify({'succes':False, "message" : "Geen valide post request"})
     if int(data['vol']) > 0 and int(data['vol']) < 101:
+        channel.update_id = channel.update_id + 1
         channel.volume = int(data['vol'])
         db.session.commit()
     return jsonify({"succes":True})
 
 
-@app.route("/<channel_slug>/results", methods=['GET'])
-def get_results(channel_slug):
-    return get_playlist(channel_slug)
 
 @app.route("/<channel_slug>/playlist", methods=['POST'])
 def get_playlist(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
-    print "new request"
-    postdata=request.get_json()
+    postdata = request.get_json()
     if not channel:
         return jsonify({"error" : "404 - Not found"})
-    for i in range(30):
-        q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
-        results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
-        current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
-        data = {
-            "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
-            "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results),
-            "volume" : channel.volume
-        }
-        if current:
-            data['current_title'] = current.video.title
-        else:
-            data['current_title'] = "no playback detected"
-        jsondata = jsonify(data)
-        hex = hashlib.md5(jsondata.get_data()).hexdigest()
-        if postdata['hex'] != hex:
-            print hex
-            data['hex'] = hex
+    for i in range(1000):
+        if 'update_id' in postdata and postdata['update_id'] < channel.update_id:
+            q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
+            results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
+            current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
+            data = {
+                "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
+                "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results),
+                "volume" : channel.volume,
+                "update_id" : channel.update_id
+            }
+            if current:
+                data['current_title'] = current.video.title
+            else:
+                data['current_title'] = "no playback detected"
             return jsonify(data)
-        time.sleep(0.1)
-    data['hex'] = postdata['hex']
-    return jsonify(data)
+        db.session.commit()
+        channel = Channel.query.filter_by(slug=channel_slug).first()
+        time.sleep(0.05)
+    return jsonify({'update_id':channel.update_id})
+
 

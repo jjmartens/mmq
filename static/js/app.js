@@ -44,7 +44,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   var vol = 50;
-  var hex = "";
+  var update_id = 0;
   var results = [];
   var upcoming = [];
   var playlist = [];
@@ -97,21 +97,27 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   this.playlistPoll = function () {
-      var d = $http.post("/" + service.channel + '/playlist', {'hex': hex}, {'timeout': 30000});
+      var d = $http.post("/" + service.channel + '/playlist', {'update_id': update_id}, {'timeout': 40000});
         // Call the async method and then do stuff with what is returned inside our own then function
+        console.log("starting up...." + update_id);
+
         d.then(function(d) {
-            playlist.length = 0;
-            playlist.push.apply(playlist, d.data.playlistVideos);
-            upcoming.length = 0;
-            upcoming.push.apply(upcoming, d.data.upcoming);
-            vol = d.data.volume;
-            hex = d.data.hex;
-            if(youtube.player) {
-                youtube.player.setVolume(vol);
+            console.log(d.data);
+            if (d.data.update_id != update_id) {
+                playlist.length = 0;
+                playlist.push.apply(playlist, d.data.playlistVideos);
+                upcoming.length = 0;
+                upcoming.push.apply(upcoming, d.data.upcoming);
+                vol = d.data.volume;
+                update_id = d.data.update_id;
+                if(youtube.player) {
+                    youtube.player.setVolume(vol);
+                }
+                youtube.videoTitle = d.data.current_title;
+                $rootScope.header = d.data.current_title;
             }
-            youtube.videoTitle = d.data.current_title;
-            $rootScope.header = d.data.current_title;
             service.playlistPoll();
+
         },
         function(d) {
             $log.log(d);
@@ -242,6 +248,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
     init();
 
    function init() {
+      $scope.viewId   = 0;
       $scope.playlist = VideosService.getPlaylist();
       $scope.upcoming = VideosService.getUpcoming();
       $scope.results = VideosService.getResults();
