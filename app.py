@@ -143,6 +143,16 @@ def get_playlist(channel_slug):
         if 'update_id' in postdata and postdata['update_id'] < channel.update_id:
             q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
             results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
+            if not results:
+                random_rec_q = Record.query.filter_by(channel_id=channel.id)
+                rand = random.randrange(0, random_rec_q.count())
+                random_rec = random_rec_q.all()[rand]
+                if random_rec:
+                    entry = Record(channel.id, random_rec.video.id)
+                    channel.update_id += 1
+                    db.session.add(entry)
+                    db.session.commit()
+                    results = [entry]
             current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
             data = {
                 "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
