@@ -3,8 +3,6 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from  sqlalchemy.sql.expression import func
 import time
 import json
-import hashlib
-import urllib
 import random
 #################
 # configuration #
@@ -17,8 +15,7 @@ if __name__ == '__main__':
 app = Flask(__name__)
 db = SQLAlchemy(app)
 
-
-from models import Channel,Record,Video
+from models import Channel, Record, Video
 
 ##########
 # routes #
@@ -131,7 +128,24 @@ def set_volume(channel_slug):
         db.session.commit()
     return jsonify({"succes":True})
 
+@app.route("/<channel_slug>/send/update", methods=['POST', 'GET'])
+def send_update(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return jsonify({'fail':'Channel not found'})
+    channel.update = 1
+    channel.update_id += 1
+    db.session.commit()
+    return jsonify({'succes':"Doot doot"})
 
+@app.route("/<channel_slug>/ack/update", methods=['POST', 'GET'])
+def received_update(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return jsonify({'fail':'Channel not found'})
+    channel.update = 0
+    db.session.commit()
+    return jsonify({'succes':'einde doot doot'})
 
 @app.route("/<channel_slug>/playlist", methods=['POST'])
 def get_playlist(channel_slug):
@@ -158,7 +172,8 @@ def get_playlist(channel_slug):
                 "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
                 "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results),
                 "volume" : channel.volume,
-                "update_id" : channel.update_id
+                "update_id" : channel.update_id,
+                "update" : channel.update
             }
             if current:
                 data['current_title'] = current.video.title

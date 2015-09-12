@@ -32,6 +32,12 @@ app.filter("secondsToTime", function () {
 app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeout', function ($window, $rootScope, $log, $http, $timeout) {
   var service = this;
   var channel;
+  var sound = new Audio('/static/audio/airhorn.wav');
+  sound.trigger = function() {
+        this.pause();
+        this.currentTime = 0;
+        this.play();
+  };
   var youtube = {
     ready: false,
     player: null,
@@ -96,8 +102,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   this.playlistPoll = function () {
       var d = $http.post("/" + service.channel + '/playlist', {'update_id': update_id}, {'timeout': 200000});
         // Call the async method and then do stuff with what is returned inside our own then function
-        console.log("starting up...." + update_id);
-
         d.then(function(d) {
             console.log(d.data);
             if (d.data.update_id != update_id) {
@@ -109,6 +113,11 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
                 update_id = d.data.update_id;
                 if(youtube.player) {
                     youtube.player.setVolume(vol);
+                }
+                if(youtube.player && d.data.update != 0) {
+                    sound.trigger();
+                    console.log("TOOOOT");
+                    $http.post("/" + service.channel + "/ack/update");
                 }
                 youtube.videoTitle = d.data.current_title;
                 $rootScope.header = d.data.current_title;
