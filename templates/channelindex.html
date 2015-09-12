@@ -102,7 +102,7 @@
                 </tr>
                 {% for record in records %}
                     <tr>
-                        <td><a data-ng-click="queue('{{ record.code }}','{{ record.title }}')">{{ record.title }}</a></td>
+                        <td><a data-ng-click='queue("{{ record.code|e }}","{{ record.title|e }}")'>{{ record.title }}</a></td>
                         <td>{{ record.duration }}</td>
                         <td>{{ record.aantal }}</td>
                     </tr>

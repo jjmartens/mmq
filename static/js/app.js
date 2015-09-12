@@ -44,11 +44,10 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
   };
 
   var vol = 50;
-
+  var update_id = -1;
   var results = [];
   var upcoming = [];
   var playlist = [];
-
   $window.onYouTubeIframeAPIReady = function () {
     $log.info('Youtube API is ready');
     youtube.ready = true;
@@ -62,7 +61,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     service.launchPlayer(upcoming[0].code, upcoming[0].title);
     service.archiveVideo(upcoming[0].r_id);
     $rootScope.loading -= 1;
-    service.poll();
   }
   function onYoutubeError (data) {
     errno = data.data;
@@ -73,7 +71,6 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
     }
     service.launchPlayer(upcoming[0].code, upcoming[0].title);
     service.archiveVideo(upcoming[0].r_id);
-    service.poll();
   }
 
 
@@ -88,39 +85,40 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
         youtube.state = 'ended';
         service.launchPlayer(upcoming[0].code, upcoming[0].title);
         service.archiveVideo(upcoming[0].r_id);
-        service.poll();
     }
     $rootScope.$apply();
   }
 
   this.startPlaylistPoll =  function () {
       service.playlistPoll();
-      $timeout(service.startPlaylistPoll, 5000);
   };
 
   this.playlistPoll = function () {
-      var d = $http.get("/" + service.channel + '/playlist');
+      var d = $http.post("/" + service.channel + '/playlist', {'update_id': update_id}, {'timeout': 200000});
         // Call the async method and then do stuff with what is returned inside our own then function
-        d.then(function(d) {
-            playlist.length = 0;
-            playlist.push.apply(playlist, d.data.playlistVideos);
-            upcoming.length = 0;
-            upcoming.push.apply(upcoming, d.data.upcoming);
-            vol = d.data.volume;
-            if(youtube.player) {
-                youtube.player.setVolume(vol);
-            }
-            youtube.videoTitle = d.data.current_title;
-            $rootScope.header = d.data.current_title;
-        });
-  };
+        console.log("starting up...." + update_id);
 
-  this.poll =  function () {
-        var d = $http.get("/" + service.channel + '/results');
-        // Call the async method and then do stuff with what is returned inside our own then function
         d.then(function(d) {
-            upcoming.length = 0;
-            upcoming.push.apply(upcoming, d.data.videos);
+            console.log(d.data);
+            if (d.data.update_id != update_id) {
+                playlist.length = 0;
+                playlist.push.apply(playlist, d.data.playlistVideos);
+                upcoming.length = 0;
+                upcoming.push.apply(upcoming, d.data.upcoming);
+                vol = d.data.volume;
+                update_id = d.data.update_id;
+                if(youtube.player) {
+                    youtube.player.setVolume(vol);
+                }
+                youtube.videoTitle = d.data.current_title;
+                $rootScope.header = d.data.current_title;
+            }
+            service.playlistPoll();
+
+        },
+        function(d) {
+            $log.log(d);
+            $timeout(service.playlistPoll,5000);
         });
   };
 
@@ -285,7 +283,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
       .error( function () {
         $log.info('Search error');
       });
-    }
+    };
 
 
     $scope.init = function() {
@@ -295,7 +293,7 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
 
     $scope.changeState = function () {
         VideosService.changeState();
-    }
+    };
 
     $scope.launch = function (code, title, r_id) {
         ga('send', {
@@ -306,7 +304,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         if($scope.playing == true) {
             VideosService.launchPlayer(code, title);
             VideosService.archiveVideo(r_id);
-            VideosService.poll();
             $log.info('Launched id:' + code + ' and title:' + title);
         } else {
             $log.log("nop kan niet");
@@ -321,7 +318,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         });
       $http.post('/' + $scope.channel + '/add', {"id": id, "title":title}).
         success(function(results) {
-            VideosService.poll();
         }).
         error(function(error) {
           $log.log(error);
@@ -332,9 +328,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         $scope.channel = slug;
         VideosService.channel = $scope.channel;
         $scope.channelselect = -1;
-        VideosService.poll();
-        VideosService.playlistPoll();
-
     };
 
 
@@ -361,7 +354,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         success(function(results) {
             $scope.query = "";
             $scope.results.length = 0;
-            VideosService.poll();
         }).
         error(function(error) {
           $log.log(error);
@@ -377,7 +369,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         });
         $http.post('/'+$scope.channel + '/remove' ,{"id": r_id}).
             success(function(results) {
-                VideosService.poll();
             }).
             error(function(error) {
               $log.log(error);
