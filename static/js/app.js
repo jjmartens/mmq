@@ -117,6 +117,11 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
                 if(youtube.player && d.data.update != 0) {
                     sound.trigger();
                     console.log("TOOOOT");
+                    ga('send', {
+                      'hitType': 'event',
+                      'eventCategory': 'update',
+                      'eventAction': 'toot'
+                    });
                     $http.post("/" + service.channel + "/ack/update");
                 }
                 youtube.videoTitle = d.data.current_title;
