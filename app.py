@@ -133,11 +133,12 @@ def send_update(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return jsonify({'fail':'Channel not found'})
-    channel.update = 1
-    channel.update_id += 1
-    db.session.commit()
-    return jsonify({'succes':"Doot doot"})
-
+    if channel.update == 0:
+        channel.update = 1
+        channel.update_id += 1
+        db.session.commit()
+        return jsonify({'succes':"Doot doot"})
+    return jsonify({'failed':'doot doot not allowed :('})
 @app.route("/<channel_slug>/ack/update", methods=['POST', 'GET'])
 def received_update(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
