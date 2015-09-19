@@ -114,7 +114,7 @@ app.service('VideosService', ['$window', '$rootScope', '$log', '$http', '$timeou
                 if(youtube.player) {
                     youtube.player.setVolume(vol);
                 }
-                if(youtube.player && d.data.update != 0) {
+                if(youtube.player && d.data.update == 1) {
                     sound.trigger();
                     console.log("TOOOOT");
                     ga('send', {
