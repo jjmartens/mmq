@@ -138,16 +138,18 @@ def send_update(channel_slug):
         channel.update_id += 1
         db.session.commit()
         return jsonify({'succes':"Doot doot"})
-    return jsonify({'failed':'doot doot not allowed :('})
+    return jsonify({'failed':'doot doot not allowed :(. To unlock this feature send me an email.'})
+    
 @app.route("/<channel_slug>/ack/update", methods=['POST', 'GET'])
 def received_update(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return jsonify({'fail':'Channel not found'})
-    channel.update = 0
-    db.session.commit()
-    return jsonify({'succes':'einde doot doot'})
-
+    if channel.update == 1:
+        channel.update = 0
+        db.session.commit()
+        return jsonify({'succes':'einde doot doot'})
+    return jsonify({'failed':'doot doots are blocked :(. To unlock this feature send me an email.'})
 @app.route("/<channel_slug>/playlist", methods=['POST'])
 def get_playlist(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
