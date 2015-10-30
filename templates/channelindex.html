@@ -55,7 +55,7 @@
                             <img class="thumbnail" src="{[{ video.thumbnail }]}" />
                           </div>
                           <div class="col-xs-9">
-                              <p class="item-title" data-ng-click="add(video.id, video.title)")>
+                              <p class="item-title" data-ng-click="add(video.id, video.title)">
                                   {[{video.title}]}
                                   <span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span>
                               </p>
@@ -89,7 +89,7 @@
                         <th>History:</th>
                     </tr>
                     <tr data-ng-repeat="video in playlist">
-                      <td><p class="item-title" data-ng-click="queue(video.code, video.title)")>{[{video.title}]}<span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></p></td>
+                      <td><p class="item-title" data-ng-click="queue(video.code, video.title)">{[{video.title}]}<span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></p></td>
                     </tr>
                   </table>
         </div>
