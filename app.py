@@ -25,8 +25,7 @@ def channelindex(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return jsonify({"msg","notfound"})
-    records = db.session.query(func.count(Record.id).label('aantal'), Video.code.label('code'), Video.title.label('title'), Video.duration.label('duration')).filter(Record.channel_id==channel.id).join(Video).group_by(Video.id).all()
-    return render_template('channelindex.html', channel=channel, records=records)
+    return render_template('channelindex.html', channel=channel)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -161,15 +160,25 @@ def get_playlist(channel_slug):
             q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
             results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
             if not results:
-                random_rec_q = Record.query.filter_by(channel_id=channel.id)
-                rand = random.randrange(0, random_rec_q.count())
-                random_rec = random_rec_q.all()[rand]
-                if random_rec:
-                    entry = Record(channel.id, random_rec.video.id)
-                    channel.update_id += 1
-                    db.session.add(entry)
-                    db.session.commit()
-                    results = [entry]
+                if len(channel.favorites) != 0:
+                    rand = random.randrange(0, len(channel.favorites))
+                    random_rec = channel.favorites[rand]
+                    if random_rec:
+                        entry = Record(channel.id, random_rec.id)
+                        channel.update_id += 1
+                        db.session.add(entry)
+                        db.session.commit()
+                        results = [entry]
+                else:
+                    random_rec_q = Record.query.filter_by(channel_id=channel.id)
+                    rand = random.randrange(0, random_rec_q.count())
+                    random_rec = random_rec_q.all()[rand]
+                    if random_rec:
+                        entry = Record(channel.id, random_rec.video.id)
+                        channel.update_id += 1
+                        db.session.add(entry)
+                        db.session.commit()
+                        results = [entry]
             current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
             data = {
                 "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
