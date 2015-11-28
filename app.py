@@ -161,7 +161,6 @@ def add_favorite(channel_slug):
         return jsonify({'succes':False, "message" : "Geen valide post request"})
     video = Video.query.get(data['v_id'])
     if not video:
-        print data['v_id']
         return jsonify({'succes':False, "message" : "Geen valide post request"})
     channel.favorites.append(video)
     db.session.commit()

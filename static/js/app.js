@@ -381,7 +381,6 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
             'eventCategory': 'favAction',   // Required.
             'eventAction': 'addSong'      // Required.
         });
-        console.log({"v_id": v_id});
         $http.post('/'+$scope.channel + '/add_favorite' ,{"v_id": v_id}).
             success(function(results) {
             }).
