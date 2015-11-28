@@ -100,11 +100,11 @@
                     <th>Duration</th>
                     <th>Times played</th>
                 </tr>
-                {% for record in records %}
+                {% for record in channel.favorites %}
                     <tr>
                         <td><a data-ng-click='queue("{{ record.code|e }}","{{ record.title|e }}")'>{{ record.title }}</a></td>
                         <td>{{ record.duration }}</td>
-                        <td>{{ record.aantal }}</td>
+                        <td>Calculating...</td>
                     </tr>
                 {% endfor %}
             </table>

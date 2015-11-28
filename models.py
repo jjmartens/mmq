@@ -42,6 +42,12 @@ class Video(db.Model):
     def __repr__(self):
         return '<id:{} ,title {}, code {}>'.format(self.id, self.title, self.code)
 
+
+relationship_table_favorites = db.Table('channel_favorite',
+                             db.Column('channel_id', db.Integer,db.ForeignKey('channel.id'), nullable=False),
+                             db.Column('video_id',db.Integer,db.ForeignKey('video.id'),nullable=False),
+                             db.PrimaryKeyConstraint('video_id', 'channel_id') )
+
 class Channel(db.Model):
     __tablename__ = 'channel'
 
@@ -49,6 +55,9 @@ class Channel(db.Model):
     title = db.Column(db.String(64))
     records = db.relationship('Record', backref='channel',
                             lazy='dynamic')
+    favorites = db.relationship('Video', backref='channel',
+                            secondary=relationship_table_favorites)
+
     slug = db.Column(db.String(64))
     volume = db.Column(db.Integer)
     update_id = db.Column(db.Integer)
@@ -60,5 +69,3 @@ class Channel(db.Model):
         self.volume = 50
         self.update_id = 0
         self.update = 0
-
-
