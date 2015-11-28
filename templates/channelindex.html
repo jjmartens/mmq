@@ -75,6 +75,7 @@
                     <tr data-ng-repeat="video in upcoming">
                       <td>
                           <span class="glyphicon glyphicon-remove pull-right" data-ng-click="remove(video.r_id)" aria-hidden="true"></span>
+                          <span class="glyphicon glyphicon-heart pull-right" data-ng-click="add_fav(video.id)" aria-hidden="true"></span>
                           <p class="item-title" data-ng-click="launch(video.code, video.title, video.r_id)">{[{video.title}]}</p>
                       </td>
                       <td>{[{video.duration | secondsToTime}]}</td>
@@ -87,9 +88,16 @@
                   <table class="table table-striped" id="playlist">
                     <tr>
                         <th>History:</th>
+                        <th>actions:</th>
                     </tr>
                     <tr data-ng-repeat="video in playlist">
-                      <td><p class="item-title" data-ng-click="queue(video.code, video.title)">{[{video.title}]}<span class="glyphicon glyphicon-plus pull-right" aria-hidden="true"></span></p></td>
+                      <td>
+                          <p class="item-title" data-ng-click="queue(video.code, video.title)">{[{video.title}]}</p>
+                      </td>
+                      <td>
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true" data-ng-click="queue(video.code, video.title)"></span>
+                          <span class="glyphicon glyphicon-heart" aria-hidden="true" data-ng-click="add_fav(video.id)"></span>
+                      </td>
                     </tr>
                   </table>
         </div>

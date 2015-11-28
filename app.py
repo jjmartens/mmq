@@ -138,7 +138,7 @@ def send_update(channel_slug):
         db.session.commit()
         return jsonify({'succes':"Doot doot"})
     return jsonify({'failed':'doot doot not allowed :(. To unlock this feature send me an email.'})
-    
+
 @app.route("/<channel_slug>/ack/update", methods=['POST', 'GET'])
 def received_update(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
@@ -149,6 +149,25 @@ def received_update(channel_slug):
         db.session.commit()
         return jsonify({'succes':'einde doot doot'})
     return jsonify({'failed':'doot doots are blocked :(. To unlock this feature send me an email.'})
+
+@app.route("/<channel_slug>/add_favorite", methods=['POST'])
+def add_favorite(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return jsonify({'fail':'Channel not found'})
+
+    data=request.get_json()
+    if 'v_id' not in data:
+        return jsonify({'succes':False, "message" : "Geen valide post request"})
+    video = Video.query.get(data['v_id'])
+    if not video:
+        print data['v_id']
+        return jsonify({'succes':False, "message" : "Geen valide post request"})
+    channel.favorites.append(video)
+    db.session.commit()
+    return jsonify({"succes":True})
+
+
 @app.route("/<channel_slug>/playlist", methods=['POST'])
 def get_playlist(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
@@ -182,7 +201,7 @@ def get_playlist(channel_slug):
             current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
             data = {
                 "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
-                "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration} , results),
+                "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration, 'id':x.video.id} , results),
                 "volume" : channel.volume,
                 "update_id" : channel.update_id,
                 "update" : channel.update
