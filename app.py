@@ -25,7 +25,8 @@ def channelindex(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return jsonify({"msg","notfound"})
-    return render_template('channelindex.html', channel=channel)
+    records = db.session.query(func.count(Record.id).label('aantal'), Video.code.label('code'), Video.title.label('title'), Video.duration.label('duration')).filter(Record.channel_id==channel.id).join(Video).group_by(Video.id).all()
+    return render_template('channelindex.html', channel=channel, records=records)
 
 
 @app.route('/', methods=['GET', 'POST'])
