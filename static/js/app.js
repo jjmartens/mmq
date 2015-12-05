@@ -388,6 +388,24 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
               $log.log(error);
             });
     };
+
+    $scope.remove_fav = function(v_id) {
+        ga('send', {
+            'hitType': 'event',
+            'eventCategory': 'favAction',   // Required.
+            'eventAction': 'removeSong'      // Required.
+        });
+        console.log(v_id);
+        $http.post('/'+$scope.channel + '/remove_favorite' ,{"v_id": v_id}).
+            success(function(results) {
+                console.log(results);
+            }).
+            error(function(error) {
+                console.log(results);
+              $log.log(error);
+            });
+    };
+
     $scope.remove = function(r_id) {
         ga('send', {
           'hitType': 'event',          // Required.

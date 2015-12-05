@@ -107,13 +107,13 @@
                 <tr>
                     <th>Titel</th>
                     <th>Duration</th>
-                    <th>Times played</th>
+                    <th>Actions</th>
                 </tr>
                 {% for record in channel.favorites %}
                     <tr>
                         <td><a data-ng-click='queue("{{ record.code|e }}","{{ record.title|e }}")'>{{ record.title }}</a></td>
                         <td>{{ record.duration }}</td>
-                        <td>Calculating...</td>
+                        <td><i data-ng-click="remove_fav({{ record.id }});" class="glyphicon glyphicon-remove"></i></td>
                     </tr>
                 {% endfor %}
             </table>

@@ -167,6 +167,21 @@ def add_favorite(channel_slug):
     db.session.commit()
     return jsonify({"succes":True})
 
+@app.route("/<channel_slug>/remove_favorite", methods=['POST'])
+def remove_favorite(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return jsonify({'fail':'Channel not found'})
+
+    data=request.get_json()
+    if 'v_id' not in data:
+        return jsonify({'succes':False, "message" : "Geen valide post request"})
+    video = Video.query.get(data['v_id'])
+    if not video:
+        return jsonify({'succes':False, "message" : "Geen valide post request"})
+    channel.favorites.remove(video)
+    db.session.commit()
+    return jsonify({"succes":True})
 
 @app.route("/<channel_slug>/playlist", methods=['POST'])
 def get_playlist(channel_slug):
