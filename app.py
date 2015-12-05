@@ -164,6 +164,7 @@ def add_favorite(channel_slug):
     if not video:
         return jsonify({'succes':False, "message" : "Geen valide post request"})
     channel.favorites.append(video)
+    channel.update_id = channel.update_id + 1
     db.session.commit()
     return jsonify({"succes":True})
 
@@ -180,6 +181,7 @@ def remove_favorite(channel_slug):
     if not video:
         return jsonify({'succes':False, "message" : "Geen valide post request"})
     channel.favorites.remove(video)
+    channel.update_id = channel.update_id + 1
     db.session.commit()
     return jsonify({"succes":True})
 
@@ -215,8 +217,8 @@ def get_playlist(channel_slug):
                         results = [entry]
             current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
             data = {
-                "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id} , q),
-                "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration, 'id':x.video.id} , results),
+                "playlistVideos" : map(lambda x: {'code' :x.video.code,'title':x.video.title, "id":x.video.id, "favorite": x.video in channel.favorites} , q),
+                "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration, 'id':x.video.id, "favorite": x.video in channel.favorites} , results),
                 "volume" : channel.volume,
                 "update_id" : channel.update_id,
                 "update" : channel.update
