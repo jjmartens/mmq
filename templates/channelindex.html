@@ -124,12 +124,14 @@
                     <th>Titel</th>
                     <th>Duration</th>
                     <th>Times played</th>
+                    <th>Actions</th>
                 </tr>
                 {% for record in records %}
                     <tr>
                         <td><a data-ng-click='queue("{{ record.code|e }}","{{ record.title|e }}")'>{{ record.title }}</a></td>
                         <td>{{ record.duration }}</td>
                         <td>{{ record.aantal }}</td>
+                        <td><i data-ng-click="add_fav({{ record.id }});" class="glyphicon glyphicon-heart"></i></td>
                     </tr>
                 {% endfor %}
             </table>
