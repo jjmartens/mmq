@@ -234,7 +234,7 @@ def get_playlist(channel_slug):
     return jsonify({'update_id':channel.update_id})
     
 @app.route("/<channel_slug>/upcoming", methods=['POST'])
-def get_playlist(channel_slug):
+def get_upcoming(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
         return jsonify({"error" : "404 - Not found"})
