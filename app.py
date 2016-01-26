@@ -232,5 +232,45 @@ def get_playlist(channel_slug):
         channel = Channel.query.filter_by(slug=channel_slug).first()
         time.sleep(0.05)
     return jsonify({'update_id':channel.update_id})
+    
+@app.route("/<channel_slug>/upcoming", methods=['POST'])
+def get_playlist(channel_slug):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return jsonify({"error" : "404 - Not found"})
+    q = Record.query.filter_by(channel_id=channel.id, executed=True).order_by(Record.id.desc()).limit(20)
+    results = Record.query.filter_by(executed=False,channel_id=channel.id).all()
+    if not results:
+        if len(channel.favorites) != 0:
+            rand = random.randrange(0, len(channel.favorites))
+            random_rec = channel.favorites[rand]
+            if random_rec:
+                entry = Record(channel.id, random_rec.id)
+                channel.update_id += 1
+                db.session.add(entry)
+                db.session.commit()
+                results = [entry]
+        else:
+            random_rec_q = Record.query.filter_by(channel_id=channel.id)
+            rand = random.randrange(0, random_rec_q.count())
+            random_rec = random_rec_q.all()[rand]
+            if random_rec:
+                entry = Record(channel.id, random_rec.video.id)
+                channel.update_id += 1
+                db.session.add(entry)
+                db.session.commit()
+                results = [entry]
+    current = Record.query.filter_by(executed=True, channel_id=channel.id).order_by(Record.id.desc()).first()
+    data = {
+        "upcoming" : map(lambda x: {'code' :x.video.code, 'r_id': x.id, 'title':x.video.title, 'duration': x.video.duration, 'id':x.video.id, "favorite": x.video in channel.favorites} , results),
+        "volume" : channel.volume,
+    }
+    if current:
+        data['current_title'] = current.video.title
+    else:
+        data['current_title'] = "no playback detected"
+    return jsonify(data)
+    db.session.commit()
+    channel = Channel.query.filter_by(slug=channel_slug).first()
 
 
