@@ -270,7 +270,4 @@ def get_playlist(channel_slug):
     else:
         data['current_title'] = "no playback detected"
     return jsonify(data)
-    db.session.commit()
-    channel = Channel.query.filter_by(slug=channel_slug).first()
-
 
