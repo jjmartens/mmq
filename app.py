@@ -233,7 +233,7 @@ def get_playlist(channel_slug):
         time.sleep(0.05)
     return jsonify({'update_id':channel.update_id})
     
-@app.route("/<channel_slug>/upcoming", methods=['POST'])
+@app.route("/<channel_slug>/upcoming", methods=['POST','GET'])
 def get_upcoming(channel_slug):
     channel = Channel.query.filter_by(slug=channel_slug).first()
     if not channel:
