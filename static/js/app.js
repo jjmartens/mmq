@@ -298,6 +298,16 @@ app.controller('IndexController', function ($scope, $http, $log,$timeout, $rootS
         $log.info('Search error');
       });
     };
+    $scope.feeling_lucky = function () {
+        ga('send', {
+          'hitType': 'event',          // Required.
+          'eventCategory': 'playlistAction',   // Required.
+          'eventAction': 'feeling_lucky'      // Required.
+        });
+        $http.get("/" + $scope.channel + "/feeling_lucky/" + $scope.query);
+        $scope.query = "";
+    };
+
 
 
     $scope.init = function() {

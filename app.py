@@ -4,6 +4,20 @@ from  sqlalchemy.sql.expression import func
 import time
 import json
 import random
+from oauth2client.tools import argparser
+from apiclient.discovery import build
+import re
+
+
+# Set DEVELOPER_KEY to the API key value from the APIs & auth > Registered apps
+# tab of
+#   https://cloud.google.com/console
+# Please ensure that you have enabled the YouTube Data API for your project.
+DEVELOPER_KEY = "REPLACE_ME"
+YOUTUBE_API_SERVICE_NAME = "youtube"
+YOUTUBE_API_VERSION = "v3"
+
+
 #################
 # configuration #
 #################
@@ -51,6 +65,33 @@ def addchannel():
     except:
         errors.append("Unable to add channel to database.")
         return jsonify({"error": errors})
+
+def queue_video(channel_slug, id, title, duration):
+    errors = []
+    if len(id) != 11:
+        errors.append("Add a youtube id not a link.")
+        return jsonify({"error": errors})
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return jsonify({"msg","Channel not found"})
+    # see if video exists if it doesnt make a new one
+    video = Video.query.filter_by(code=id).first()
+    if not video:
+        video = Video(id, title=title,duration=duration)
+        db.session.add(video)
+        db.session.commit()
+    try:
+        record = Record(channel.id , video.id)
+        channel.update_id = channel.update_id + 1
+        db.session.add(record)
+        db.session.commit()
+        return jsonify({"succes": True})
+    except:
+        errors.append("Unable to add item to database")
+        return jsonify({"errors": errors})
+
+
+
 
 @app.route('/<channel_slug>/add', methods=['POST'])
 def add(channel_slug):
@@ -167,6 +208,48 @@ def add_favorite(channel_slug):
     channel.update_id = channel.update_id + 1
     db.session.commit()
     return jsonify({"succes":True})
+
+def YTDurationToSeconds(duration):
+  match = re.match('PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
+  hours = _js_parseInt(match[0]) if match[0] else 0
+  minutes = _js_parseInt(match[1]) if match[1] else 0
+  seconds = _js_parseInt(match[2]) if match[2] else 0
+  return hours * 3600 + minutes * 60 + seconds
+
+# js-like parseInt
+# https://gist.github.com/douglasmiranda/2174255
+def _js_parseInt(string):
+    return int(''.join([x for x in string if x.isdigit()]))
+
+@app.route("/<channel_slug>/feeling_lucky/<query>")
+def feeling_lucky(channel_slug, query):
+    channel = Channel.query.filter_by(slug=channel_slug).first()
+    if not channel:
+        return jsonify({'fail':'Channel not found'})
+    if not query:
+        return jsonify({'fail':'Empty search query'})
+    youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+    developerKey=DEVELOPER_KEY)
+    # Call the search.list method to retrieve results matching the specified
+    # query term.
+    search_response = youtube.search().list(
+       q=query,
+       type="video",
+       part="id,snippet",
+       maxResults=1
+    ).execute()
+
+    try:
+        videoId = search_response['items'][0]['id']['videoId']
+    except:
+        return jsonify({'succes':False, "message" : "Geen video gevonden"})
+
+    contentDetails = youtube.videos().list(
+         id=videoId,
+         part = 'contentDetails'
+    ).execute()
+    queue_video(channel_slug, search_response['items'][0]['id']['videoId'], search_response['items'][0]['snippet']['title'], YTDurationToSeconds(contentDetails['items'][0]['contentDetails']['duration']))
+    return jsonify({'succes': True})
 
 @app.route("/<channel_slug>/remove_favorite", methods=['POST'])
 def remove_favorite(channel_slug):
