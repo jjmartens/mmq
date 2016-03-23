@@ -49,7 +49,7 @@ def index():
 
 @app.route('/channels', methods=['GET', 'POST'])
 def channels():
-    channels = Channel.query.all()
+    channels = Channel.query.filter_by(active=True).all()
     return jsonify({"channels" : map(lambda x: {'title' :x.title, 'slug': x.slug} , channels)})
 
 @app.route('/add', methods=['POST'])

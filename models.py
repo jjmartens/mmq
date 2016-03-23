@@ -53,6 +53,8 @@ class Channel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
+    active = db.Column(db.Boolean)
+
     records = db.relationship('Record', backref='channel',
                             lazy='dynamic')
     favorites = db.relationship('Video', backref='channel',
@@ -69,3 +71,4 @@ class Channel(db.Model):
         self.volume = 50
         self.update_id = 0
         self.update = 0
+        self.active = True
